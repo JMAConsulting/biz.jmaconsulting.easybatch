@@ -168,21 +168,6 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'description' => '',
     'help_text' => '',
   );
-  $settingsMetadata['always_post_to_accounts_receivable'] = array(
-    'group_name' => 'Contribute Preferences',
-    'group' => 'contribute',
-    'name' => 'always_post_to_accounts_receivable',
-    'type' => 'Integer',
-    'html_type' => 'checkbox',
-    'quick_form_type' => 'Element',
-    'default' => 0,
-    'add' => '4.7',
-    'title' => 'Always post to Accounts Receivable?',
-    'is_domain' => 1,
-    'is_contact' => 0,
-    'description' => '',
-    'help_text' => '',
-  );
   $settingsMetadata['auto_financial_batch'] = array(
     'group_name' => 'Contribute Preferences',
     'group' => 'contribute',
@@ -213,4 +198,30 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'description' => '',
     'help_text' => '',
   );
+}
+
+/**
+ * Implements hook_civicrm_postProcess().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postProcess
+ *
+ */
+function easybatch_civicrm_postProcess($formName, &$form) {
+  if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
+    $params = $form->_submitValues;
+    $easyBatchParams = array(
+      'display_financial_batch',
+      'require_financial_batch',
+      'auto_financial_batch',
+      'batch_close_time_time',
+    );
+    foreach ($easyBatchParams as $field) {
+      if (!empty($params[$field])) {
+        Civi::settings()->set($field, $params[$field]);
+      }
+      else {
+        Civi::settings()->set($field, 0);
+      }
+    }
+  }
 }
