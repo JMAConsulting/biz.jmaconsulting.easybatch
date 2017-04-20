@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<extension key="biz.jmaconsulting.easybatch" type="module">
+  <file>easybatch</file>
+  <name>Easy Batch</name>
+  <description>This extension provides capability to add financial transactions to open batches when they are created in the frontend and backend.</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Edsel</author>
+    <email>edsel.lopez@jmaconsulting.biz</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/JMAConsulting/biz.jmaconsulting.easybatch</url>
+    <url desc="Documentation">https://github.com/JMAConsulting/biz.jmaconsulting.easybatch/blob/master/README.md</url>
+    <url desc="Support">https://github.com/JMAConsulting/biz.jmaconsulting.easybatch/issues</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2017-04-20</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>4.7</ver>
+  </compatibility>
+  <comments></comments>
+  <civix>
+    <namespace>CRM/EasyBatch</namespace>
+  </civix>
+</extension>
