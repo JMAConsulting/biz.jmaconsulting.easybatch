@@ -106,3 +106,111 @@ function easybatch_civicrm_caseTypes(&$caseTypes) {
 function easybatch_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _easybatch_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
+
+/**
+ * Implements hook_civicrm_preProcess().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
+ *
+ */
+function easybatch_civicrm_preProcess($formName, &$form) {
+  if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
+    $settings = $form->getVar('_settings');
+    $contributeSettings = array();
+    foreach ($settings as $key => $setting) {
+      $contributeSettings[$key] = $setting;
+      if ($key == 'default_invoice_page') {
+        $contributeSettings['display_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+        $contributeSettings['require_financial_batch'] = CRM_Core_BAO_Setting::LOCALIZATION_PREFERENCES_NAME;
+        $contributeSettings['always_post_to_accounts_receivable'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+        $contributeSettings['auto_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+        $contributeSettings['batch_close_time'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+      }
+    }
+    $form->setVar('_settings', $contributeSettings);
+  }
+}
+
+/**
+ * Implements hook_civicrm_alterSettingsMetaData().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsMetaData
+ *
+ */
+function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, $profile) {
+  $settingsMetadata['display_financial_batch'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'display_financial_batch',
+    'type' => 'Integer',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Display Financial Batch of Backoffice forms?',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['require_financial_batch'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'require_financial_batch',
+    'type' => 'Integer',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Require Financial Batch of Backoffice forms?',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['always_post_to_accounts_receivable'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'always_post_to_accounts_receivable',
+    'type' => 'Integer',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Always post to Accounts Receivable?',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['auto_financial_batch'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'auto_financial_batch',
+    'type' => 'Integer',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Create automatic daily financial batches for Accounts Receivable frontend transactions?',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['batch_close_time'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'batch_close_time',
+    'type' => 'activityDateTime',
+    'html_type' => 'Date',
+    'quick_form_type' => 'Date',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Automatic daily batch close time for frontend Accounts Receivable transactions',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+}
