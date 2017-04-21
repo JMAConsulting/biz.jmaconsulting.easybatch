@@ -201,6 +201,69 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
 }
 
 /**
+ * Implements hook_civicrm_buildForm().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
+ *
+ */
+function easybatch_civicrm_buildForm($formName, &$form) {
+  if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
+
+    // Create the select widgets for frontend forms.
+    $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches();
+    $isOrg = FALSE;
+    if (count($batches) > 1) {
+      $isOrg = TRUE;
+    }
+    foreach ($batches as $id => $batch) {
+      $label = "Current automatic daily financial batch for A/R";
+      if ($isOrg) {
+        $label .= " - " . CRM_Contact_BAO_Contact::displayName($id);
+      }
+      $form->add('select', "auto_batch_{$id}", ts($label),
+        array('' => '- ' . ts('select') . ' -') + $batch,
+        FALSE
+      );
+    }
+
+    // Assign the elements to the template
+    $batches = array_combine(array_map(function($k){ return 'auto_batch_'.$k; }, array_keys($batches)), $batches);
+    $form->assign('batchIDs', array_keys($batches));
+    CRM_Core_Region::instance('page-body')->add(array(
+      'template' => 'CRM/EasyBatch/Form/Admin.tpl',
+    ));
+  }
+  if ($formName == "CRM_Contribute_Form_Contribution") {
+    if (Civi::settings()->get('display_financial_batch')) {
+      $batches = array();
+      $isRequired = FALSE;
+      $result = civicrm_api3('Batch', 'get', array(
+        'sequential' => 1,
+        'return' => array("title"),
+        'status_id' => "Open",
+      ));
+      if ($result['count'] > 0) {
+        foreach ($result['values'] as $batch) {
+          $batches[$batch['id']] = $batch['title'];
+        }
+      }
+      if (!empty($batches)) {
+        if (Civi::settings()->get('require_financial_batch')) {
+          $isRequired = TRUE;
+        }
+        $form->add('select', 'batch_id', ts('Financial Batch'),
+          array('' => '- ' . ts('select') . ' -') + $batches,
+          $isRequired
+        );
+        CRM_Core_Region::instance('page-body')->add(array(
+          'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
+        ));
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_postProcess().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postProcess
@@ -208,6 +271,8 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
  */
 function easybatch_civicrm_postProcess($formName, &$form) {
   if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
+
+    // Save the individual settings.
     $params = $form->_submitValues;
     $easyBatchParams = array(
       'display_financial_batch',
@@ -222,6 +287,11 @@ function easybatch_civicrm_postProcess($formName, &$form) {
       else {
         Civi::settings()->set($field, 0);
       }
+    }
+
+    // Create batches if automatic daily batches is enabled.
+    if (CRM_Utils_Array::value('auto_financial_batch', $params)) {
+      CRM_EasyBatch_BAO_EasyBatch::createFinancialBatchForAR();
     }
   }
 }
