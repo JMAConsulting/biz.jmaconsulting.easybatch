@@ -288,6 +288,33 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 }
 
 /**
+ * Implements hook_civicrm_post().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_post
+ *
+ */
+function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if ($objectName == "Contribution") {
+    $result = civicrm_api3('EntityFinancialAccount', 'get', array(
+      'sequential' => 1,
+      'return' => array("financial_account_id.id", "financial_account_id.name", "financial_account_id.contact_id"),
+      'entity_table' => "civicrm_financial_type",
+      'account_relationship' => "Accounts Receivable Account is",
+      'entity_id' => $objectRef->financial_type_id,
+    ));
+    if ($result['values'] > 0) {
+      $setting = civicrm_api3('Setting', 'get', array(
+        'name' => 'auto_batch_' . $result['values'][0]['financial_account_id.contact_id'],
+        'contact_id' => $result['values'][0]['financial_account_id.contact_id'],
+      ));
+      if ($setting['count'] > 0) {
+        // TODO: Add transactions in batch here.
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_postProcess().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postProcess
