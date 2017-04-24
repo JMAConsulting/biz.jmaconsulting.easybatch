@@ -311,7 +311,7 @@ function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         $result['values'][0]['financial_account_id.contact_id']
       );
       if (!empty($batchId)) {
-        CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $objectId);
+        //CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $objectId); Commented out for now.
       }
       else {
         // TODO: Create new batch for new owner.
@@ -343,7 +343,7 @@ function easybatch_civicrm_postProcess($formName, &$form) {
         $result = civicrm_api3('Participant', 'get', array(
           'sequential' => 1,
           'return' => array("id"),
-          'contact_id' => 2,
+          'contact_id' => $form->_contactId,
           'event_id' => 1,
           'api.ParticipantPayment.get' => array('participant_id' => "\$value.id"),
         ));
