@@ -19,7 +19,6 @@
           $("tr.crm-preferences-form-block-" + toHide).hide();
         }
       }
-      $("tr.crm-preferences-form-block-prior_financial_period td:nth-child(2)").html($('#orgs'));
     });
   </script>
 {/literal}

@@ -63,6 +63,20 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
   }
 
   /**
+   * Check if transaction already added to batch.
+   */
+  public static function checkIfFTAddedToBatch($trxnId) {
+    $entityBatch = civicrm_api3('EntityBatch', 'get', array(
+      'entity_table' => "civicrm_financial_trxn",
+      'entity_id' => $trxnId,
+    ));
+    if ($entityBatch['count'] > 0) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
    * Check if batch is still open while trying to save a new contribution.
    */
   public static function checkIfBatchOpen($batchId) {
@@ -90,6 +104,9 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
     ));
     if ($trxns['count'] > 0) {
       foreach ($trxns['values'] as $id => $value) {
+        if (self::checkIfFTAddedToBatch($value['financial_trxn_id'])) {
+          continue;
+        }
         civicrm_api3('EntityBatch', 'create', array(
           'entity_table' => "civicrm_financial_trxn",
           'entity_id' => $value['financial_trxn_id'],

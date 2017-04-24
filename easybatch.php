@@ -211,7 +211,7 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
 function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   if ($formName == "CRM_Contribute_Form_Contribution") {
     if (Civi::settings()->get('display_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
-      $errors[] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
+      $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
   }
 }
