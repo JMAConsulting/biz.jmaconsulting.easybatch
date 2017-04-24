@@ -355,11 +355,12 @@ function easybatch_civicrm_postProcess($formName, &$form) {
         // Create the settings for individual organizations.
         $contactID = substr(strrchr($key, "_"), 1);
         CRM_Core_BAO_Setting::setItem(
-        $value,
-        CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME,
-        $key,
-        CRM_Core_Component::getComponentID('CiviContribute'),
-        $contactID);
+          $value,
+          CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME,
+          $key,
+          CRM_Core_Component::getComponentID('CiviContribute'),
+          $contactID
+        );
       }
     }
   }

@@ -48,7 +48,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
   /**
    * Create entry in easybatch entity table.
    */
-  public static function getEasyBatches() {
+  public static function getEasyBatches($job = FALSE) {
     $status = CRM_Core_OptionGroup::getValue('batch_status', 'Open', 'name');
     $easyBatches = array();
     $sql = "SELECT e.batch_id, e.contact_id, b.title
@@ -57,7 +57,12 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
       WHERE b.status_id = {$status}";
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      $easyBatches[$dao->contact_id][$dao->batch_id] = $dao->title;
+      if ($job) {
+        $easyBatches[] = $dao->batch_id;
+      }
+      else {
+        $easyBatches[$dao->contact_id][$dao->batch_id] = $dao->title;
+      }
     }
     return $easyBatches;
   }
@@ -127,7 +132,6 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
   /**
    * Retrieve all Financial Accounts which have Accounts Receivable relationship.
    *
-   *
    * @return array of Financial Accounts
    */
   public static function getARFinancialAccounts() {
@@ -170,7 +174,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
     if (!empty($financialAccounts)) {
       foreach ($financialAccounts as $id => $value) {
         $params['title'] = CRM_Batch_BAO_Batch::generateBatchName() . ' ' . $value['name'];
-        $params['status_id'] = CRM_Core_OptionGroup::getValue('batch_status', 'Open', 'name');
+        $params['status_id'] = "Open";
         $params['created_id'] = CRM_Core_Session::singleton()->get('userID');
         $params['created_date'] = CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s"));
 
@@ -178,6 +182,28 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
         $entity = self::createEntityEasyBatch($batch['id'], $value['owner']);
       }
     }
+  }
+
+  /**
+   * Close/Reopen batches based on daily close time.
+   */
+  public static function closeReopenBatches() {
+    $closingTime = date('His', strtotime(Civi::settings()->get('batch_close_time_time')));
+    $closed = array();
+    if (date("His") >= $closingTime) {
+      $batches = self::getEasyBatches(TRUE);
+      if (!empty($batches)) {
+        foreach ($batches as $id) {
+          $batch = civicrm_api3('Batch', 'create', array(
+            'id' => $id,
+            'status_id' => "Closed",
+          ));
+          $closed[] = $batch['id'];
+        }
+        CRM_EasyBatch_BAO_EasyBatch::createFinancialBatchForAR();
+      }
+    }
+    return count($closed);
   }
 
 }
