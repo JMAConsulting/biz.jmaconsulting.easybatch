@@ -209,8 +209,8 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
  * @param array $errors
  */
 function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  if ($formName == "CRM_Contribute_Form_Contribution") {
-    if (Civi::settings()->get('display_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
+  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership"))) {
+    if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
   }
@@ -249,7 +249,9 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       'template' => 'CRM/EasyBatch/Form/Admin.tpl',
     ));
   }
-  if ($formName == "CRM_Contribute_Form_Contribution") {
+
+  // Add batch list selector.
+  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant"))) {
     if (Civi::settings()->get('display_financial_batch')) {
       $batches = array();
       $isRequired = FALSE;
@@ -291,9 +293,34 @@ function easybatch_civicrm_buildForm($formName, &$form) {
  *
  */
 function easybatch_civicrm_postProcess($formName, &$form) {
-  if ($formName == "CRM_Contribute_Form_Contribution") {
+  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant"))) {
     if ($batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues)) {
-      CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $form->_id);
+      if ($formName == "CRM_Member_Form_Membership") {
+        $result = civicrm_api3('MembershipPayment', 'get', array(
+          'sequential' => 1,
+          'return' => array("contribution_id"),
+          'membership_id' => $form->_id,
+        ));
+        if ($result['count'] > 0) {
+          $contributionId = $result['values'][0]['contribution_id'];
+        }
+      }
+      elseif ($formName == "CRM_Event_Form_Participant") {
+        $result = civicrm_api3('Participant', 'get', array(
+          'sequential' => 1,
+          'return' => array("id"),
+          'contact_id' => 2,
+          'event_id' => 1,
+          'api.ParticipantPayment.get' => array('participant_id' => "\$value.id"),
+        ));
+        if ($result['count'] > 0) {
+          $contributionId = $result['values'][0]['api.ParticipantPayment.get']['values'][0]['contribution_id'];
+        }
+      }
+      else {
+        $contributionId = $form->_id;
+      }
+      CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $contributionId);
     }
   }
   if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
