@@ -307,8 +307,18 @@ function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
         'name' => 'auto_batch_' . $result['values'][0]['financial_account_id.contact_id'],
         'contact_id' => $result['values'][0]['financial_account_id.contact_id'],
       ));
-      if ($setting['count'] > 0) {
-        // TODO: Add transactions in batch here.
+      $batchId = CRM_Core_BAO_Setting::getItem(
+        CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME,
+        'auto_batch_' . $result['values'][0]['financial_account_id.contact_id'],
+        CRM_Core_Component::getComponentID('CiviContribute'),
+        NULL,
+        $result['values'][0]['financial_account_id.contact_id']
+      );
+      if (!empty($batchId)) {
+        CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $objectId);
+      }
+      else {
+        // TODO: Create new batch for new owner.
       }
     }
   }
