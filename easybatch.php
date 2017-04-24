@@ -302,11 +302,7 @@ function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
       'account_relationship' => "Accounts Receivable Account is",
       'entity_id' => $objectRef->financial_type_id,
     ));
-    if ($result['values'] > 0) {
-      $setting = civicrm_api3('Setting', 'get', array(
-        'name' => 'auto_batch_' . $result['values'][0]['financial_account_id.contact_id'],
-        'contact_id' => $result['values'][0]['financial_account_id.contact_id'],
-      ));
+    if ($result['values'] > 0) {s
       $batchId = CRM_Core_BAO_Setting::getItem(
         CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME,
         'auto_batch_' . $result['values'][0]['financial_account_id.contact_id'],
