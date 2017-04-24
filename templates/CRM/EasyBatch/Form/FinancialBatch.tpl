@@ -1,5 +1,5 @@
-<div id="batchContent">{$form.batch_id.html}</div>
-<div id="batchLabel">{$form.batch_id.label}</div>
+<div id="batchContent">{$form.financial_batch_id.html}</div>
+<div id="batchLabel">{$form.financial_batch_id.label}</div>
 
 {literal}
 <script type="text/javascript">

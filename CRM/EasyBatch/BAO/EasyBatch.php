@@ -63,6 +63,51 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
   }
 
   /**
+   * Check if batch is still open while trying to save a new contribution.
+   */
+  public static function checkIfBatchOpen($batchId) {
+    $batch = civicrm_api3('Batch', 'get', array(
+      'sequential' => 1,
+      'return' => array("status_id"),
+      'id' => $batchId,
+    ));
+    if ($batch['values'][0]['status_id'] == CRM_Core_OptionGroup::getValue('batch_status', 'Open', 'name')) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  /**
+   * Add financial transaction entry to batch.
+   */
+  public static function addToBatch($batchId, $contributionId) {
+    $tx = new CRM_Core_Transaction();
+    $trxns = civicrm_api3('EntityFinancialTrxn', 'get', array(
+      'sequential' => 1,
+      'return' => array("financial_trxn_id"),
+      'entity_table' => "civicrm_contribution",
+      'entity_id' => $contributionId,
+    ));
+    if ($trxns['count'] > 0) {
+      foreach ($trxns['values'] as $id => $value) {
+        civicrm_api3('EntityBatch', 'create', array(
+          'entity_table' => "civicrm_financial_trxn",
+          'entity_id' => $value['financial_trxn_id'],
+          'batch_id' => $batchId,
+        ));
+      }
+    }
+    if (!self::checkIfBatchOpen($batchId)) {
+      // FIXME: This should end up rolling back the entire contribution, not just the entity batch creation.
+      $tx->rollback();
+      return FALSE;
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  /**
    * Retrieve all Financial Accounts which have Accounts Receivable relationship.
    *
    *

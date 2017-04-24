@@ -122,7 +122,6 @@ function easybatch_civicrm_preProcess($formName, &$form) {
       if ($key == 'default_invoice_page') {
         $contributeSettings['display_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
         $contributeSettings['require_financial_batch'] = CRM_Core_BAO_Setting::LOCALIZATION_PREFERENCES_NAME;
-        $contributeSettings['always_post_to_accounts_receivable'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
         $contributeSettings['auto_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
         $contributeSettings['batch_close_time'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
       }
@@ -201,6 +200,23 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
 }
 
 /**
+ * Implements hook_civicrm_validateForm().
+ *
+ * @param string $formName
+ * @param array $fields
+ * @param array $files
+ * @param CRM_Core_Form $form
+ * @param array $errors
+ */
+function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  if ($formName == "CRM_Contribute_Form_Contribution") {
+    if (Civi::settings()->get('display_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
+      $errors[] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
+    }
+  }
+}
+
+/**
  * Implements hook_civicrm_buildForm().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
@@ -247,18 +263,23 @@ function easybatch_civicrm_buildForm($formName, &$form) {
           $batches[$batch['id']] = $batch['title'];
         }
       }
-      if (!empty($batches)) {
-        if (Civi::settings()->get('require_financial_batch')) {
-          $isRequired = TRUE;
-        }
-        $form->add('select', 'batch_id', ts('Financial Batch'),
-          array('' => '- ' . ts('select') . ' -') + $batches,
-          $isRequired
-        );
-        CRM_Core_Region::instance('page-body')->add(array(
-          'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
-        ));
+      if (Civi::settings()->get('require_financial_batch')) {
+        $isRequired = TRUE;
       }
+
+      // Add financial batch selector.
+      $form->add('select', 'financial_batch_id', ts('Financial Batch'),
+        array('' => '- ' . ts('select') . ' -') + $batches,
+        $isRequired
+      );
+
+      // Set default batch if only one is present.
+      if ($result['count'] == 1) {
+        $form->setDefaults(array('financial_batch_id' => $result['id']));
+      }
+      CRM_Core_Region::instance('page-body')->add(array(
+        'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
+      ));
     }
   }
 }
@@ -270,8 +291,12 @@ function easybatch_civicrm_buildForm($formName, &$form) {
  *
  */
 function easybatch_civicrm_postProcess($formName, &$form) {
+  if ($formName == "CRM_Contribute_Form_Contribution") {
+    if ($batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues)) {
+      CRM_EasyBatch_BAO_EasyBatch::addToBatch($batchId, $form->_id);
+    }
+  }
   if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
-
     // Save the individual settings.
     $params = $form->_submitValues;
     $easyBatchParams = array(
