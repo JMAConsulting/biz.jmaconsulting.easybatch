@@ -1,4 +1,4 @@
-<table>
+<table style="display:none">
   <tr class='crm-contribution-form-block-batch_id'>
      <td class='label'>{$form.financial_batch_id.label}</td>
      <td class='content'>{$form.financial_batch_id.html}</td>
