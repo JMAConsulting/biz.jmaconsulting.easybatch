@@ -169,19 +169,35 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
    * Create Financial Batches for each AR financial account.
    */
   public static function createFinancialBatchForAR() {
-    $params = array();
     $financialAccounts = self::getARFinancialAccounts();
     if (!empty($financialAccounts)) {
       foreach ($financialAccounts as $id => $value) {
-        $params['title'] = CRM_Batch_BAO_Batch::generateBatchName() . ' ' . $value['name'];
-        $params['status_id'] = "Open";
-        $params['created_id'] = CRM_Core_Session::singleton()->get('userID');
-        $params['created_date'] = CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s"));
+        $params = array(
+          'title' => CRM_Batch_BAO_Batch::generateBatchName() . ' ' . $value['name'],
+          'status_id' => "Open",
+          'created_id' => CRM_Core_Session::singleton()->get('userID'),
+          'created_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
+        );
 
         $batch = civicrm_api3('Batch', 'create', $params);
         $entity = self::createEntityEasyBatch($batch['id'], $value['owner']);
       }
     }
+  }
+
+  /**
+   * Create Financial Batch for new account owner.
+   */
+  public static function openBatch($financialAccount, $contributionId) {
+    $params = array(
+      'title' => CRM_Batch_BAO_Batch::generateBatchName() . ' ' . $financialAccount['financial_account_id.name'],
+      'status_id' => "Open",
+      'created_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
+    );
+
+    $batch = civicrm_api3('Batch', 'create', $params);
+    $entity = self::createEntityEasyBatch($batch['id'], $financialAccount['financial_account_id.contact_id']);
+    CRM_EasyBatch_BAO_EasyBatch::addToBatch($batch['id'], $contributionId);
   }
 
   /**
