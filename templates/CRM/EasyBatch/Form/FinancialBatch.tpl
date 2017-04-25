@@ -16,9 +16,10 @@ CRM.$(function($) {
   // Event.
   $( document ).ajaxComplete(function(event, xhr, settings) {
     var str = settings.url;
-    if (str.indexOf("civicrm/contact/view/participant") >= 0) {
-      $(".crm-event-eventfees-form-block-total_amount")
-        .after($('tr.crm-contribution-form-block-batch_id'));
+    var getVar = str.split("eventId=");
+    if (str.indexOf("civicrm/contact/view/participant") >= 0 && getVar[1] != undefined ) {
+      $(".crm-event-eventfees-form-block-payment_instrument_id")
+        .before($('tr.crm-contribution-form-block-batch_id'));
     }
   });
 });
