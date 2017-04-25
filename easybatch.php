@@ -236,6 +236,9 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Add batch list selector.
   if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant", "CRM_Contribute_Form_AdditionalPayment"))) {
+    if ($formName == 'CRM_Contribute_Form_AdditionalPayment' && $form->getVar('_view') == 'transaction' && ($form->_action & CRM_Core_Action::BROWSE)) {
+      return FALSE;
+    }
     if (Civi::settings()->get('display_financial_batch')) {
       $batches = array();
       $isRequired = FALSE;
