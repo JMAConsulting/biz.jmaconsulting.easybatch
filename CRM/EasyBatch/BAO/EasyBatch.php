@@ -106,6 +106,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
       'return' => array("financial_trxn_id"),
       'entity_table' => "civicrm_contribution",
       'entity_id' => $contributionId,
+      'limit' => 0,
     ));
     if ($trxns['count'] > 0) {
       foreach ($trxns['values'] as $id => $value) {
@@ -141,6 +142,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
       'return' => array("financial_account_id.id", "financial_account_id.name", "financial_account_id.contact_id"),
       'entity_table' => "civicrm_financial_type",
       'account_relationship' => "Accounts Receivable Account is",
+      'limit' => 0,
     ));
     if ($result['count'] > 0) {
       foreach ($result['values'] as $key => $value) {
