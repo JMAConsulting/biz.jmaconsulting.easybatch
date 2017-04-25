@@ -204,6 +204,9 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
    * Close/Reopen batches based on daily close time.
    */
   public static function closeReopenBatches() {
+    if (!Civi::settings()->get('auto_financial_batch')) {
+      return;
+    }
     $setting = Civi::settings()->get('batch_close_time_time');
     if (!empty($setting)) {
       $closingTime = date('His', strtotime($setting));

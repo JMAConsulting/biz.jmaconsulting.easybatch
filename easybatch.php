@@ -235,7 +235,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
   }
 
   // Add batch list selector.
-  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant"))) {
+  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant", "CRM_Contribute_Form_AdditionalPayment"))) {
     if (Civi::settings()->get('display_financial_batch')) {
       $batches = array();
       $isRequired = FALSE;
@@ -268,6 +268,12 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       ));
     }
   }
+
+  // Add settings to payment processors.
+  if ($formName == "CRM_Admin_Form_PaymentProcessor") {
+    //$form->add('checkbox', 'pp_auto_financial_batch', ts('Create automatic daily financial batches?'));
+  }
+      
 }
 
 /**
@@ -295,7 +301,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
  */
 function easybatch_civicrm_postProcess($formName, &$form) {
   // Backoffice forms.
-  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant"))) {
+  if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant", "CRM_Contribute_Form_AdditionalPayment"))) {
     if ($batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues)) {
       if ($formName == "CRM_Member_Form_Membership") {
         $result = civicrm_api3('MembershipPayment', 'get', array(

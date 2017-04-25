@@ -11,6 +11,10 @@ CRM.$(function($) {
   $(".crm-contribution-form-block-receive_date")
     .after("<tr class='crm-contribution-form-block-batch_id'><td class='label'>" + batchLabelHtml + "</td><td class='content'>" + batchContentHtml + "</td></tr>");
 
+  // Payment.
+  $(".crm-payment-form-block-trxn_date")
+    .after("<tr class='crm-contribution-form-block-batch_id'><td class='label'>" + batchLabelHtml + "</td><td class='content'>" + batchContentHtml + "</td></tr>");
+
   // Membership.
   $(".crm-membership-form-block-membership_type_id")
     .after("<tr class='crm-contribution-form-block-batch_id'><td class='label'>" + batchLabelHtml + "</td><td class='content'>" + batchContentHtml + "</td></tr>");
@@ -26,6 +30,10 @@ CRM.$(function($) {
 
   $('#batchLabel').hide();
   $('#batchContent').hide();
+  $( document ).ajaxComplete(function() {
+    $('#batchLabel').hide();
+    $('#batchContent').hide();
+  });
 });
 </script>
 {/literal}
