@@ -158,11 +158,14 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
   /**
    * Create entry in easybatch entity table.
    */
-  public static function createEntityEasyBatch($batchId, $cid) {
+  public static function createEntityEasyBatch($batchId, $cid, $addParams = array()) {
     $params = array(
       'batch_id' => $batchId,
       'contact_id' => $cid,
     );
+    if (!empty($addParams)) {
+      $params = array_merge($params, $addParams);
+    }
     $entity = self::create($params);
     return $entity;
   }

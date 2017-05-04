@@ -103,6 +103,18 @@ class CRM_EasyBatch_DAO_EasyBatch extends CRM_Core_DAO
    * @var int unsigned
    */
   public $contact_id;
+  /**
+   * Org ID.
+   *
+   * @var int unsigned
+   */
+  public $org_id;
+  /**
+   * Batch Date.
+   *
+   * @var date
+   */
+  public $batch_date;
 
   /**
    * class constructor
@@ -158,6 +170,18 @@ class CRM_EasyBatch_DAO_EasyBatch extends CRM_Core_DAO
           'title' => ts('Contact ID'),
           'export' => TRUE,
         ),
+        'org_id' => array(
+          'name' => 'org_id',
+          'type' => CRM_Utils_Type::T_INT,
+          'title' => ts('Org ID'),
+          'export' => TRUE,
+        ),
+        'batch_date' => array(
+          'name' => 'batch_date',
+          'type' => CRM_Utils_Type::T_DATE,
+          'title' => ts('Batch Date'),
+          'export' => TRUE,
+        ),
       );
     }
     return self::$_fields;
@@ -176,6 +200,8 @@ class CRM_EasyBatch_DAO_EasyBatch extends CRM_Core_DAO
         'id' => 'id',
         'batch_id' => 'batch_id',
         'contact_id' => 'contact_id',
+        'org_id' => 'org_id',
+        'batch_date' => 'batch_date',
       );
     }
     return self::$_fieldKeys;
