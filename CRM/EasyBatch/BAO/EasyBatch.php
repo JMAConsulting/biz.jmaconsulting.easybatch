@@ -49,7 +49,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
    * Create entry in easybatch entity table.
    */
   public static function getEasyBatches($job = FALSE) {
-    $status = CRM_Core_OptionGroup::getValue('batch_status', 'Open', 'name');
+    $status = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
     $easyBatches = array();
     $sql = "SELECT e.batch_id, e.contact_id, b.title
       FROM civicrm_easybatch_entity e
@@ -90,7 +90,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
       'return' => array("status_id"),
       'id' => $batchId,
     ));
-    if ($batch['values'][0]['status_id'] == CRM_Core_OptionGroup::getValue('batch_status', 'Open', 'name')) {
+    if ($batch['values'][0]['status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open')) {
       return TRUE;
     }
     return FALSE;
