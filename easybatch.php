@@ -119,11 +119,12 @@ function easybatch_civicrm_preProcess($formName, &$form) {
     $contributeSettings = array();
     foreach ($settings as $key => $setting) {
       $contributeSettings[$key] = $setting;
-      if ($key == 'default_invoice_page') {
+      if ($key == 'acl_financial_type') {
         $contributeSettings['display_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
-        $contributeSettings['require_financial_batch'] = CRM_Core_BAO_Setting::LOCALIZATION_PREFERENCES_NAME;
-        $contributeSettings['auto_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
-        $contributeSettings['batch_close_time'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+        $contributeSettings['require_financial_batch'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
+      }
+      if ($key == 'always_post_to_accounts_receivable') {
+        $contributeSettings['auto_batch_non_payment_trxns'] = CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME;
       }
     }
     $form->setVar('_settings', $contributeSettings);
@@ -167,31 +168,21 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'description' => '',
     'help_text' => '',
   );
-  $settingsMetadata['auto_financial_batch'] = array(
+  $settingsMetadata['auto_batch_non_payment_trxns'] = array(
     'group_name' => 'Contribute Preferences',
     'group' => 'contribute',
-    'name' => 'auto_financial_batch',
+    'name' => 'auto_batch_non_payment_trxns',
     'type' => 'Integer',
-    'html_type' => 'checkbox',
+    'html_type' => 'select',
     'quick_form_type' => 'Element',
     'default' => 0,
+    'option_values' => array(
+      0 => ts('No'),
+      'iif' => ts('Into .csv file'),
+      'csv' => ts('Into .iif file'),
+    ),
     'add' => '4.7',
-    'title' => 'Create automatic daily financial batches for Accounts Receivable frontend transactions?',
-    'is_domain' => 1,
-    'is_contact' => 0,
-    'description' => '',
-    'help_text' => '',
-  );
-  $settingsMetadata['batch_close_time'] = array(
-    'group_name' => 'Contribute Preferences',
-    'group' => 'contribute',
-    'name' => 'batch_close_time',
-    'type' => 'activityDateTime',
-    'html_type' => 'Date',
-    'quick_form_type' => 'Date',
-    'default' => 0,
-    'add' => '4.7',
-    'title' => 'Automatic daily batch close time for frontend Accounts Receivable transactions',
+    'title' => 'Automatically batch non-payment transactions?',
     'is_domain' => 1,
     'is_contact' => 0,
     'description' => '',
