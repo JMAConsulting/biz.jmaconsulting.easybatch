@@ -32,14 +32,14 @@
  * $Id$
  *
  */
-class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatch {
+class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
   public function __construct() {
     parent::__construct();
   }
 
   public static function create($params) {
-    $entity = new CRM_EasyBatch_DAO_EasyBatch();
+    $entity = new CRM_EasyBatch_DAO_EasyBatchEntity();
     $entity->copyValues($params);
     $entity->save();
     return $entity;
