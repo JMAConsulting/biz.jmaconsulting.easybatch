@@ -59,13 +59,13 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     else {
       $where[] = "e.payment_processor_id IS " . ($isPayment ? 'NOT NULL' : 'NULL');
     }
-    $sql = "SELECT e.batch_id, b.title
-      FROM civicrm_easybatch_entity e
-      INNER JOIN civicrm_batch b ON b.id = e.batch_id
-      WHERE " . implode(' AND ', $where) ;
+    $sql = "SELECT b.id, b.title
+      FROM civicrm_batch b
+      LEFT JOIN civicrm_easybatch_entity e ON b.id = e.batch_id
+      WHERE " . implode(' AND ', $where);
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      $easyBatches[$dao->batch_id] = $dao->title;
+      $easyBatches[$dao->id] = $dao->title;
     }
     return $easyBatches;
   }
