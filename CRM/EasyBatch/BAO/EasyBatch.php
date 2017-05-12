@@ -48,21 +48,24 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Create entry in easybatch entity table.
    */
-  public static function getEasyBatches($job = FALSE) {
+  public static function getEasyBatches($isPayment = FALSE, $isAuto = TRUE, $paymentProcessorID = NULL) {
     $status = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
     $easyBatches = array();
-    $sql = "SELECT e.batch_id, e.contact_id, b.title
+    $where = array("b.status_id = {$status}");
+    $where[] = "e.is_automatic = {$isAuto}";
+    if ($paymentProcessorID) {
+      $where[] = "e.payment_processor_id = {$paymentProcessorID}";
+    }
+    else {
+      $where[] = "e.payment_processor_id IS " . ($isPayment ? 'NOT NULL' : 'NULL');
+    }
+    $sql = "SELECT e.batch_id, b.title
       FROM civicrm_easybatch_entity e
       INNER JOIN civicrm_batch b ON b.id = e.batch_id
-      WHERE b.status_id = {$status}";
+      WHERE " . implode(' AND ', $where) ;
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
-      if ($job) {
-        $easyBatches[] = $dao->batch_id;
-      }
-      else {
-        $easyBatches[$dao->contact_id][$dao->batch_id] = $dao->title;
-      }
+      $easyBatches[$dao->batch_id] = $dao->title;
     }
     return $easyBatches;
   }

@@ -232,28 +232,9 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Contribution preferences form.
   if ($formName == 'CRM_Admin_Form_Preferences_Contribute') {
-
     // Create the select widgets for frontend forms.
     $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches();
-    $isOrg = FALSE;
-    if (count($batches) > 1) {
-      $isOrg = TRUE;
-    }
-    foreach ($batches as $id => $batch) {
-      $label = "Current automatic daily financial batch for A/R";
-      if ($isOrg) {
-        $label .= " - " . CRM_Contact_BAO_Contact::displayName($id);
-      }
-      $form->add('select', "auto_batch_{$id}", ts($label),
-        array('' => '- ' . ts('select') . ' -') + $batch,
-        FALSE
-      );
-    }
-
-    // Assign the elements to the template
-    $batches = array_combine(array_map(function($k){ return 'auto_batch_'.$k; }, array_keys($batches)), $batches);
-    $form->assign('batchIDs', array_keys($batches));
-    $form->assign('batchCount', count($batches));
+    $form->assign('batches', $batches);
     CRM_Core_Region::instance('page-body')->add(array(
       'template' => 'CRM/EasyBatch/Form/Admin.tpl',
     ));
