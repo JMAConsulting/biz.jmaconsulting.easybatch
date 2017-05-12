@@ -35,7 +35,7 @@
     <comment>FA organization id</comment>
   </field>
   <foreignKey>
-    <name>id</name>
+    <name>contact_id</name>
     <table>civicrm_contact</table>
     <key>id</key>
     <onDelete>CASCADE</onDelete>
@@ -46,7 +46,7 @@
     <comment>FK payment processor id</comment>
   </field>
   <foreignKey>
-    <name>id</name>
+    <name>payment_processor_id</name>
     <table>civicrm_payment_processor</table>
     <key>id</key>
     <onDelete>CASCADE</onDelete>
