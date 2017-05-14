@@ -200,20 +200,33 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Batch create form.
   if ($formName == 'CRM_Financial_Form_FinancialBatch') {
-    $form->addEntityRef('contact_id', ts('Owner'), array(
+    $form->addEntityRef('created_id', ts('Owner'), array(
       'create' => TRUE,
       'api' => array('extra' => array('email')),
     ), TRUE);
+
     $form->addEntityRef('org_id', ts('Company'), array(
       'create' => FALSE,
       'api' => array(
         'params' => array('contact_type' => 'Organization'),
       ),
     ));
+
     $form->addDate('batch_date', ts('Date'), FALSE, array('formatType' => 'activityDate'));
     CRM_Core_Region::instance('page-body')->add(array(
       'template' => 'CRM/EasyBatch/Form/ContactRef.tpl',
     ));
+    $batchId = $form->getVar('_id');
+    if (!$batchId) {
+      $defaults = array('created_id' => CRM_Core_Session::singleton()->get('userID')); 
+    }
+    else {
+      $values = CRM_EasyBatch_BAO_EasyBatch::retrieve(array('batch_id' => $batchId));
+      $defaults = array(
+        'org_id' => CRM_Utils_Array::value('contact_id', $values),
+      );
+    }
+    $form->setDefaults($defaults);
   }
 
   // Batch search form.
@@ -404,19 +417,11 @@ function easybatch_civicrm_postProcess($formName, &$form) {
   if ($formName == "CRM_Financial_Form_FinancialBatch") {
     $batchDate = CRM_Utils_Array::value('batch_date', $form->_submitValues, NULL);
     $params = array(
-      'org_id' => CRM_Utils_Array::value('org_id', $form->_submitValues, NULL),
+      'contact_id' => CRM_Utils_Array::value('org_id', $form->_submitValues, NULL),
       'batch_date' => CRM_Utils_Date::processDate($batchDate),
+      'batch_id' => $form->getVar('_id'),
     );
-    $contactId = CRM_Utils_Array::value('contact_id', $form->_submitValues, NULL);
-    $result = civicrm_api3('Batch', 'get', array(
-      'sequential' => 1,
-      'return' => array("id"),
-      'title' => $form->_submitValues['title'],
-    ));
-    $batchId = $result['values'][0]['id'];
-    if ($batchId && $contactId) {
-      CRM_EasyBatch_BAO_EasyBatch::createEntityEasyBatch($batchId, $contactId, $params);
-    }
+    CRM_EasyBatch_BAO_EasyBatch::create($params);
   }
 
   // Component settings form.
@@ -429,12 +434,10 @@ function easybatch_civicrm_postProcess($formName, &$form) {
       'auto_batch_non_payment_trxns',
     );
     foreach ($easyBatchParams as $field) {
-      if (!empty($params[$field])) {
-        Civi::settings()->set($field, $params[$field]);
-      }
-      else {
-        Civi::settings()->set($field, 0);
-      }
+      Civi::settings()->set($field, CRM_Utils_Array::value($field, $params, 0));
+    }
+    if (CRM_Utils_Array::value('auto_batch_non_payment_trxns', $params)) {
+      CRM_EasyBatch_BAO_EasyBatch::createAutoNonPaymentFinancialBatch();
     }
   }
 
@@ -460,10 +463,28 @@ function easybatch_civicrm_postProcess($formName, &$form) {
     if (!empty($submitValues['auto_financial_batch'])) {
       CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch(
         $submitValues['financial_account_id'],
-        $paymentProcessorId,
-        $submitValues['name']
+        $submitValues['name'],
+        $paymentProcessorId
       );
     }
   }
 
+}
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_post
+ *
+ */
+function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if ($objectName == 'FinancialAccount' && in_array($op, array('create', 'edit'))) {
+    $sql = "SELECT contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $suffix = NULL;
+    if ($dao->N > 1) {
+      $suffix = CRM_Contact_BAO_Contact::displayName($objectRef->contact_id);
+    }
+    CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch($objectId, $suffix);
+  }
 }

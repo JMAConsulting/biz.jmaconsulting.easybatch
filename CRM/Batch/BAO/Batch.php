@@ -269,7 +269,7 @@ class CRM_Batch_BAO_Batch extends CRM_Batch_DAO_Batch {
     $additionalJoin = " LEFT JOIN civicrm_easybatch_entity e ON e.batch_id = batch.id ";
 
     $query = "
-      SELECT batch.*, c.sort_name created_by, e.*
+      SELECT batch.*, c.sort_name created_by, e.contact_id
       FROM  civicrm_batch batch
       INNER JOIN civicrm_contact c ON batch.created_id = c.id
       {$additionalJoin}

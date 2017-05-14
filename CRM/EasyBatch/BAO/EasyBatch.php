@@ -46,6 +46,24 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   /**
+   * Fetch object based on array of properties.
+   *
+   * @param array $params
+   *   (reference ) an assoc array of name/value pairs.
+   *
+   * @return array
+   */
+  public static function retrieve($params) {
+    $entityBatch = new CRM_EasyBatch_DAO_EasyBatchEntity();
+    $entityBatch->copyValues($params);
+    $values = array();
+    if ($entityBatch->find(TRUE)) {
+      CRM_Core_DAO::storeValues($entityBatch, $values);
+    }
+    return $values;
+  }
+
+  /**
    * Create entry in easybatch entity table.
    */
   public static function getEasyBatches(
@@ -179,17 +197,33 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   /**
-   * Create Financial Batches for each AR financial account.
+   * Create Auto Financial Batch
+   */
+  public static function createAutoNonPaymentFinancialBatch() {
+    $sql = "SELECT id, name, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $suffix = NULL;
+    while ($dao->fetch()) {
+      if ($dao->N > 1) {
+        $suffix = CRM_Contact_BAO_Contact::displayName($dao->contact_id);
+      }
+      self::createAutoFinancialBatch($dao->id, $suffix);
+    }
+  }
+
+  /**
+   * Create Auto Financial Batch
    */
   public static function createAutoFinancialBatch(
     $financialAccountId,
-    $paymentProcessorID = NULL,
-    $suffixName = NULL
+    $suffixName = NULL,
+    $paymentProcessorID = NULL
   ) {
     $contactId = civicrm_api3('FinancialAccount', 'getSingle', array(
       'return' => array("contact_id"),
       'id' => $financialAccountId,
     ));
+    $contactId = $contactId['contact_id'];
 
     //check if batch is still open
     if ($paymentProcessorID) {
@@ -217,7 +251,6 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     );
 
     $batch = civicrm_api3('Batch', 'create', $params);
-    $contactId = $contactId['contact_id'];
     $entityBatchParams = array(
       'batch_id' => $batch['id'],
       'contact_id' => $contactId,
