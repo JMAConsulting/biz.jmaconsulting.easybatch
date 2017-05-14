@@ -5,7 +5,7 @@
 CREATE TABLE  IF NOT EXISTS `civicrm_easybatch_entity` (
   `id` int unsigned NOT NULL AUTO_INCREMENT  ,
   `batch_id` int unsigned NOT NULL   COMMENT 'FK to Batch ID',
-  `contact_id` int unsigned NOT NULL   COMMENT 'FA organization id',
+  `contact_id` int unsigned  COMMENT 'FA organization id',
   `payment_processor_id` int unsigned    COMMENT 'FK payment processor id',
   `is_automatic` tinyint NOT NULL  DEFAULT 0,
   PRIMARY KEY (`id`),
