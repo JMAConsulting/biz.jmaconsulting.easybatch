@@ -9,8 +9,8 @@
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-function civicrm_api3_easybatch_closebatches() {
-  $result = CRM_EasyBatch_BAO_EasyBatch::closeReopenBatches();
+function civicrm_api3_easybatch_processautomaticbatches() {
+  $result = CRM_EasyBatch_BAO_EasyBatch::processAutomaticBatches();
   if ($result) {
     return civicrm_api3_create_success(ts('Batches Closed: ' . $result));
   }

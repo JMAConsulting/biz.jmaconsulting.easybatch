@@ -278,30 +278,58 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Close/Reopen batches based on daily close time.
    */
-  public static function closeReopenBatches() {
-    if (!Civi::settings()->get('auto_financial_batch')) {
-      return;
-    }
-    $setting = Civi::settings()->get('batch_close_time_time');
-    if (!empty($setting)) {
-      $closingTime = date('His', strtotime($setting));
-    }
-    else {
-      $closingTime = date('His', strtotime('11:59:59AM'));
-    }
+  public static function processAutomaticBatches() {
+    $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
+    $sql = "SELECT e.batch_id, e.payment_processor_id, e.contact_id, p.name
+      FROM civicrm_easybatch_entity e
+        INNER JOIN civicrm_batch b ON b.id = e.batch_id
+        LEFT JOIN civicrm_payment_processor p ON p.id = e.payment_processor_id
+      WHERE e.is_automatic = 1
+        AND b.status_id = {$openStatusID}
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
     $closed = array();
-    if (date("His") >= $closingTime) {
-      $batches = self::getEasyBatches(TRUE);
-      if (!empty($batches)) {
-        foreach ($batches as $id) {
-          $batch = civicrm_api3('Batch', 'create', array(
-            'id' => $id,
-            'status_id' => "Closed",
-          ));
-          $closed[] = $batch['id'];
+    $exportBatch = array();
+    $exportFormat = Civi::settings()->get("auto_batch_non_payment_trxns");
+    while ($dao->fetch()) {
+      $batchStatus = NULL;
+      if ($dao->payment_processor_id) {
+        $closingTime = Civi::settings()->get("pp_batch_close_time_{$dao->payment_processor_id}");
+        if (empty($closingTime)) {
+          $closingTime = '11:59:59PM';
         }
-        CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch();
+        $closingTime = date('His', strtotime($closingTime));
+        if (date("His") >= $closingTime) {
+          $batchStatus = 'Closed';
+        }
       }
+      elseif ($exportFormat) {
+        // TODO: add condition to export non payment batch
+        $exportBatch[] = $dao->batch_id;
+      }
+
+      if ($closeBatch) {
+        $batch = civicrm_api3('Batch', 'create', array(
+          'id' => $dao->batch_id,
+          'status_id' => $batchStatus,
+        ));
+        if ($dao->payment_processor_id) {
+          $financialAccountId = CRM_Contribute_PseudoConstant::getRelationalFinancialAccount(
+            $dao->payment_processor_id,
+            NULL,
+            'civicrm_payment_processor'
+          );
+          CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch(
+            $financialAccountId,
+            $dao->name,
+            $dao->payment_processor_id
+          );
+        }
+      }
+    }
+    if (!empty($exportBatch)) {
+      CRM_Batch_BAO_Batch::exportFinancialBatch($exportBatch, $exportFormat);
+      CRM_EasyBatch_BAO_EasyBatch::createAutoNonPaymentFinancialBatch();
     }
     return count($closed);
   }

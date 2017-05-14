@@ -6,16 +6,16 @@
 return array (
   0 => 
   array (
-    'name' => 'Close/Reopen Batches',
+    'name' => 'Process Automatic Batches',
     'entity' => 'Job',
     'params' => 
     array (
       'version' => 3,
-      'name' => 'Close/Reopen Batches',
+      'name' => 'Process Automatic Batches',
       'description' => 'This scheduled job automatically closes batches at the specified closing time and creates new open batches for the next day.',
       'run_frequency' => 'Daily',
       'api_entity' => 'Easybatch',
-      'api_action' => 'Closebatches',
+      'api_action' => 'processAutomaticBatches',
       'parameters' => '',
     ),
   ),
