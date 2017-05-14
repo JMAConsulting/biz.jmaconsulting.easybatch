@@ -2,7 +2,7 @@
 {if $batches}
 <table class='non-payment-batches'>
   <tr class="crm-preferences-form-block-non_payment_transactions_batch">
-    <td class='label'>{ts}Current non-payment transactions batch{/ts}</td>
+    <td class='label'><label>{ts}Current non-payment transactions batch{/ts}</label></td>
     <td>
       <div>
         {foreach from=$batches item="batchTitle"}
