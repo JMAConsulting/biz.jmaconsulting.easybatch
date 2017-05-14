@@ -424,8 +424,7 @@ function easybatch_civicrm_postProcess($formName, &$form) {
     $easyBatchParams = array(
       'display_financial_batch',
       'require_financial_batch',
-      'auto_financial_batch',
-      'batch_close_time_time',
+      'auto_batch_non_payment_trxns',
     );
     foreach ($easyBatchParams as $field) {
       if (!empty($params[$field])) {
@@ -433,28 +432,6 @@ function easybatch_civicrm_postProcess($formName, &$form) {
       }
       else {
         Civi::settings()->set($field, 0);
-      }
-    }
-
-    // Create batches if automatic daily batches is enabled.
-    if (CRM_Utils_Array::value('auto_financial_batch', $params)) {
-      // Only save the automatic batches the first time. After this, we will be generating the automatic batches via a scheduled job using the batch closing time.
-      $count = CRM_Core_DAO::singleValueQuery("SELECT COUNT(id) FROM civicrm_easybatch_entity");
-      if (!$count) {
-        CRM_EasyBatch_BAO_EasyBatch::createFinancialBatchForAR();
-      }
-    }
-    foreach ($params as $key => $value) {
-      if (strpos($key, 'auto_batch_') !== FALSE) {
-        // Create the settings for individual organizations.
-        $contactID = substr(strrchr($key, "_"), 1);
-        CRM_Core_BAO_Setting::setItem(
-          $value,
-          CRM_Core_BAO_Setting::CONTRIBUTE_PREFERENCES_NAME,
-          $key,
-          CRM_Core_Component::getComponentID('CiviContribute'),
-          $contactID
-        );
       }
     }
   }
