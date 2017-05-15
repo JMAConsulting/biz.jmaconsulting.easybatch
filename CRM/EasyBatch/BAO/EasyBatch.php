@@ -221,7 +221,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   /**
-   * Close/Reopen batches based on daily close time.
+   * process batches based on daily close time.
    */
   public static function processAutomaticBatches() {
     $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
@@ -279,4 +279,21 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     return count($closed);
   }
 
+  /**
+   * Get All non auto batches.
+   */
+  public static function getAllNonAutoBatches() {
+    $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
+    $sql = "SELECT b.id, b.title
+      FROM civicrm_batch b
+        LEFT JOIN civicrm_easybatch_entity e ON b.id = e.batch_id
+      WHERE b.status_id = {$openStatusID} AND (e.is_automatic <> 1 || e.id IS NULL)
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $batches = array();
+    while ($dao->fetch()) {
+      $batches[$dao->id] = $dao->title;
+    }
+    return $batches;
+  }
 }

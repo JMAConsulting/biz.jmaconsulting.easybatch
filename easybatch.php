@@ -259,31 +259,21 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       return FALSE;
     }
     if (Civi::settings()->get('display_financial_batch')) {
-      $batches = array();
       $isRequired = FALSE;
-      $result = civicrm_api3('Batch', 'get', array(
-        'sequential' => 1,
-        'return' => array("title"),
-        'status_id' => "Open",
-      ));
-      if ($result['count'] > 0) {
-        foreach ($result['values'] as $batch) {
-          $batches[$batch['id']] = $batch['title'];
-        }
-      }
       if (Civi::settings()->get('require_financial_batch')) {
         $isRequired = TRUE;
       }
 
       // Add financial batch selector.
+      $batches = CRM_EasyBatch_BAO_EasyBatch::getAllNonAutoBatches();
       $form->add('select', 'financial_batch_id', ts('Financial Batch'),
         array('' => '- ' . ts('select') . ' -') + $batches,
         $isRequired
       );
 
       // Set default batch if only one is present.
-      if ($result['count'] == 1) {
-        $form->setDefaults(array('financial_batch_id' => $result['id']));
+      if (count($batches) == 1) {
+        $form->setDefaults(array('financial_batch_id' => reset($batches)));
       }
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
@@ -345,7 +335,8 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
 function easybatch_civicrm_postProcess($formName, &$form) {
   // Backoffice forms.
   if (in_array($formName, array("CRM_Contribute_Form_Contribution", "CRM_Member_Form_Membership", "CRM_Event_Form_Participant", "CRM_Contribute_Form_AdditionalPayment"))) {
-    if ($batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues)) {
+    $batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues);
+    if ($batchId) {
       if ($formName == "CRM_Member_Form_Membership") {
         $result = civicrm_api3('MembershipPayment', 'get', array(
           'sequential' => 1,
