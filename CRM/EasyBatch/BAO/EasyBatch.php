@@ -157,31 +157,6 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   /**
-   * Retrieve all Financial Accounts which have Accounts Receivable relationship.
-   *
-   * @return array of Financial Accounts
-   */
-  public static function getARFinancialAccounts() {
-    $financialAccounts = array();
-    $result = civicrm_api3('EntityFinancialAccount', 'get', array(
-      'sequential' => 1,
-      'return' => array("financial_account_id.id", "financial_account_id.name", "financial_account_id.contact_id"),
-      'entity_table' => "civicrm_financial_type",
-      'account_relationship' => "Accounts Receivable Account is",
-      'limit' => 0,
-    ));
-    if ($result['count'] > 0) {
-      foreach ($result['values'] as $key => $value) {
-        $financialAccounts[$value['financial_account_id.id']] = array(
-          'name' => $value['financial_account_id.name'],
-          'owner' => $value['financial_account_id.contact_id'],
-        );
-      }
-    }
-    return $financialAccounts;
-  }
-
-  /**
    * Create entry in easybatch entity table.
    */
   public static function createEntityEasyBatch($batchId, $cid, $addParams = array()) {
@@ -194,21 +169,6 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
     $entity = self::create($params);
     return $entity;
-  }
-
-  /**
-   * Create Auto Financial Batch
-   */
-  public static function createAutoNonPaymentFinancialBatch() {
-    $sql = "SELECT id, name, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
-    $dao = CRM_Core_DAO::executeQuery($sql);
-    $suffix = NULL;
-    while ($dao->fetch()) {
-      if ($dao->N > 1) {
-        $suffix = CRM_Contact_BAO_Contact::displayName($dao->contact_id);
-      }
-      self::createAutoFinancialBatch($dao->id, $suffix);
-    }
   }
 
   /**
@@ -258,21 +218,6 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'payment_processor_id' => $paymentProcessorID,
     );
     self::create($entityBatchParams);
-  }
-
-  /**
-   * Create Financial Batch for new account owner.
-   */
-  public static function openBatch($financialAccount, $contributionId) {
-    $params = array(
-      'title' => CRM_Batch_BAO_Batch::generateBatchName() . ' ' . $financialAccount['financial_account_id.name'],
-      'status_id' => "Open",
-      'created_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
-    );
-
-    $batch = civicrm_api3('Batch', 'create', $params);
-    $entity = self::createEntityEasyBatch($batch['id'], $financialAccount['financial_account_id.contact_id']);
-    CRM_EasyBatch_BAO_EasyBatch::addToBatch($batch['id'], $contributionId);
   }
 
   /**
