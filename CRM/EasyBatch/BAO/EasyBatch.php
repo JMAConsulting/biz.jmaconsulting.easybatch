@@ -96,12 +96,12 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Check if transaction already added to batch.
    */
-  public static function checkIfFTAddedToBatch($trxnId) {
-    $entityBatch = civicrm_api3('EntityBatch', 'get', array(
+  public static function checkIfFTAlreadyAddedToBatch($trxnId) {
+    $entityBatchCount = civicrm_api3('EntityBatch', 'getCount', array(
       'entity_table' => "civicrm_financial_trxn",
       'entity_id' => $trxnId,
     ));
-    if ($entityBatch['count'] > 0) {
+    if ($entityBatchCount > 0) {
       return TRUE;
     }
     return FALSE;
@@ -111,12 +111,12 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
    * Check if batch is still open while trying to save a new contribution.
    */
   public static function checkIfBatchOpen($batchId) {
-    $batch = civicrm_api3('Batch', 'get', array(
-      'sequential' => 1,
+    $batch = civicrm_api3('Batch', 'getsingle', array(
       'return' => array("status_id"),
       'id' => $batchId,
     ));
-    if ($batch['values'][0]['status_id'] == CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open')) {
+    $openBatchStatusId = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
+    if ($batch['status_id'] == $openBatchStatusId) {
       return TRUE;
     }
     return FALSE;
@@ -125,27 +125,18 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Add financial transaction entry to batch.
    */
-  public static function addToBatch($batchId, $contributionId) {
-    $tx = new CRM_Core_Transaction();
-    $trxns = civicrm_api3('EntityFinancialTrxn', 'get', array(
-      'sequential' => 1,
-      'return' => array("financial_trxn_id"),
-      'entity_table' => "civicrm_contribution",
-      'entity_id' => $contributionId,
-      'limit' => 0,
-    ));
-    if ($trxns['count'] > 0) {
-      foreach ($trxns['values'] as $id => $value) {
-        if (self::checkIfFTAddedToBatch($value['financial_trxn_id'])) {
-          continue;
-        }
-        civicrm_api3('EntityBatch', 'create', array(
-          'entity_table' => "civicrm_financial_trxn",
-          'entity_id' => $value['financial_trxn_id'],
-          'batch_id' => $batchId,
-        ));
-      }
+  public static function addTransactionsToBatch($batchId, $financialTrxnId) {
+    if (self::checkIfFTAlreadyAddedToBatch($financialTrxnId)) {
+      return FALSE;
     }
+    $tx = new CRM_Core_Transaction();
+
+    civicrm_api3('EntityBatch', 'create', array(
+      'entity_table' => "civicrm_financial_trxn",
+      'entity_id' => $financialTrxnId,
+      'batch_id' => $batchId,
+    ));
+
     if (!self::checkIfBatchOpen($batchId)) {
       // FIXME: This should end up rolling back the entire contribution, not just the entity batch creation.
       $tx->rollback();
@@ -154,6 +145,39 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     else {
       return TRUE;
     }
+  }
+
+  /**
+   * Process Auto financial batch.
+   */
+  public static function addTransactionsToAutoBatch($financialTrxn) {
+    $financialEasyBatchId = NULL;
+    if ($financialTrxn->is_payment) {
+      if ($financialTrxn->payment_processor_id
+        && Civi::settings()->get("pp_auto_financial_batch_{$financialTrxn->payment_processor_id}")
+      ) {
+        $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches(TRUE, TRUE, $financialTrxn->payment_processor_id);
+        $financialEasyBatchId = key($batches);
+      }
+    }
+    else {
+      if (Civi::settings()->get("auto_batch_non_payment_trxns")) {
+        $financialAccountId = empty($financialTrxn->from_financial_account_id) ? $financialTrxn->to_financial_account_id : $financialTrxn->from_financial_account_id;
+      
+        $contactId = civicrm_api3('FinancialAccount', 'getSingle', array(
+          'return' => array("contact_id"),
+          'id' => $financialAccountId,
+        ));
+        $contactId = $contactId['contact_id'];
+        $batches = self::getEasyBatches(TRUE, TRUE, NULL, 'contact_id');
+        $financialEasyBatchId = array_search($contactId, $batches);
+      }
+    }
+
+    if ($financialEasyBatchId) {
+      self::addTransactionsToBatch($financialEasyBatchId, $financialTrxn->id);
+    }
+
   }
 
   /**
