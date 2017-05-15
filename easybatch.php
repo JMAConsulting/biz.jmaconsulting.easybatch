@@ -309,7 +309,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     if ($paymentProcessorId 
       && Civi::settings()->get("pp_auto_financial_batch_{$paymentProcessorId}")
     ) {
-      $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches(TRUE, TRUE, $paymentProcessorId);
+      $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($paymentProcessorId);
       $form->assign('batches', $batches);
       $defaults = array(
         'auto_financial_batch' => Civi::settings()->get("pp_auto_financial_batch_{$paymentProcessorId}"),

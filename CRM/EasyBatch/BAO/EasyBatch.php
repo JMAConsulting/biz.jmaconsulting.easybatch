@@ -67,10 +67,9 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
    * Create entry in easybatch entity table.
    */
   public static function getEasyBatches(
-    $isPayment = FALSE,
-    $isAuto = TRUE,
     $paymentProcessorID = NULL,
-    $returnColumn = 'title'
+    $returnColumn = 'title',
+    $isAuto = TRUE
   ) {
     $status = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
     $easyBatches = array();
@@ -80,7 +79,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       $where[] = "e.payment_processor_id = {$paymentProcessorID}";
     }
     else {
-      $where[] = "e.payment_processor_id IS " . ($isPayment ? 'NOT NULL' : 'NULL');
+      $where[] = "e.payment_processor_id IS NULL";
     }
     $sql = "SELECT b.id, {$returnColumn}
       FROM civicrm_batch b
@@ -156,7 +155,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       if ($financialTrxn->payment_processor_id
         && Civi::settings()->get("pp_auto_financial_batch_{$financialTrxn->payment_processor_id}")
       ) {
-        $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches(TRUE, TRUE, $financialTrxn->payment_processor_id);
+        $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id);
         $financialEasyBatchId = key($batches);
       }
     }
@@ -169,7 +168,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
           'id' => $financialAccountId,
         ));
         $contactId = $contactId['contact_id'];
-        $batches = self::getEasyBatches(TRUE, TRUE, NULL, 'contact_id');
+        $batches = self::getEasyBatches(NULL, 'contact_id');
         $financialEasyBatchId = array_search($contactId, $batches);
       }
     }
@@ -211,12 +210,13 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
     //check if batch is still open
     if ($paymentProcessorID) {
-      $batches = self::getEasyBatches(TRUE, TRUE, $paymentProcessorID);
+      $batches = self::getEasyBatches($paymentProcessorID);
     }
     else {
-      $batches = self::getEasyBatches(TRUE, TRUE, NULL, 'contact_id');
+      $batches = self::getEasyBatches(NULL, 'contact_id');
       $batches = array_search($contactId, $batches);
     }
+
     if (!empty($batches)) {
       return FALSE;
     }
@@ -242,6 +242,21 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'payment_processor_id' => $paymentProcessorID,
     );
     self::create($entityBatchParams);
+  }
+
+  /**
+   * Create Auto Financial Batch
+   */
+  public static function createAutoNonPaymentFinancialBatch() {
+    $sql = "SELECT id, name, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    $suffix = NULL;
+    while ($dao->fetch()) {
+      if ($dao->N > 1) {
+        $suffix = CRM_Contact_BAO_Contact::displayName($dao->contact_id);
+      }
+      self::createAutoFinancialBatch($dao->id, $suffix);
+    }
   }
 
   /**
