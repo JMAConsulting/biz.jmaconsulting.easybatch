@@ -14,7 +14,7 @@ return array (
       'name' => 'Process Automatic Batches',
       'description' => 'This scheduled job automatically closes batches at the specified closing time and creates new open batches for the next day.',
       'run_frequency' => 'Daily',
-      'api_entity' => 'Easybatch',
+      'api_entity' => 'EasybatchEntity',
       'api_action' => 'processAutomaticBatches',
       'parameters' => '',
     ),

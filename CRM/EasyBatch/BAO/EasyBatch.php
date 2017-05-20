@@ -279,24 +279,40 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       $batchStatus = NULL;
       if ($dao->payment_processor_id) {
         $closingTime = Civi::settings()->get("pp_batch_close_time_{$dao->payment_processor_id}");
+        $jobRunDate = Civi::settings()->get("pp_last_job_run_{$dao->payment_processor_id}");
+        if (!$jobRunDate) {
+          $jobRunDate = date('Ymd',strtotime("-1 days"));
+        }
+        if ($jobRunDate == date('Ymd')) {
+          continue;
+        }
         if (empty($closingTime)) {
           $closingTime = '11:59:59PM';
         }
-        $closingTime = date('His', strtotime($closingTime));
-        if (date("His") >= $closingTime) {
+        $closingTime = "$jobRunDate $closingTime";
+        $closingTime = date('YmdHis', strtotime($closingTime));
+        if (date("YmdHis") >= $closingTime) {
           $batchStatus = 'Closed';
         }
       }
       elseif ($exportFormat) {
-        // TODO: add condition to export non payment batch
+        $jobRunDate = Civi::settings()->get("npp_last_job_run");
+        if (!$jobRunDate) {
+          $jobRunDate = date('YmdHis',strtotime("-1 days"));
+        }
+        if ($jobRunDate < date('Ym01000000')) {
+          continue;
+        }
         $exportBatch[] = $dao->batch_id;
+        $batchStatus = 'Exported';
       }
-
-      if ($closeBatch) {
+      if ($batchStatus) {
         $batch = civicrm_api3('Batch', 'create', array(
           'id' => $dao->batch_id,
           'status_id' => $batchStatus,
+          'force_close' => TRUE,
         ));
+        $closed[] = $dao->batch_id;
         if ($dao->payment_processor_id) {
           $financialAccountId = CRM_Contribute_PseudoConstant::getRelationalFinancialAccount(
             $dao->payment_processor_id,
@@ -308,12 +324,14 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
             $dao->name,
             $dao->payment_processor_id
           );
+          Civi::settings()->set("pp_last_job_run_{$dao->payment_processor_id}", date('Ymd'));
         }
       }
     }
     if (!empty($exportBatch)) {
-      CRM_Batch_BAO_Batch::exportFinancialBatch($exportBatch, $exportFormat);
+      CRM_Batch_BAO_Batch::exportFinancialBatch($exportBatch, $exportFormat, FALSE);
       CRM_EasyBatch_BAO_EasyBatch::createAutoNonPaymentFinancialBatch();
+      Civi::settings()->set("npp_last_job_run", date('YmdHis'));
     }
     return count($closed);
   }

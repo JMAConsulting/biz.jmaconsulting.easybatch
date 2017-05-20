@@ -178,8 +178,8 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'default' => 0,
     'option_values' => array(
       0 => ts('No'),
-      'IIF' => ts('Into .csv file'),
-      'CSV' => ts('Into .iif file'),
+      'IIF' => ts('Into .iif file'),
+      'CSV' => ts('Into .csv file'),
     ),
     'add' => '4.7',
     'title' => 'Automatically batch non-payment transactions?',
@@ -531,7 +531,9 @@ function easybatch_civicrm_entityTypes(&$entityTypes) {
  */
 function easybatch_civicrm_pre($op, $objectName, &$objectId, &$params) {
   if ($objectName == 'Batch' && in_array($op, array('edit', 'delete'))) {
-    if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
+    if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)
+      || CRM_Utils_Array::value('force_close', $params)
+    ) {
       return FALSE;
     }
     if ($op == 'edit') {
