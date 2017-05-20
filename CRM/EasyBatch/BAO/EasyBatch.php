@@ -335,4 +335,17 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
     return $batches;
   }
+
+  /**
+   * Check if auto batch has status open.
+   */
+  public static function isOpenAutoBatch($batchId) {
+    $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
+    $sql = "SELECT b.id
+      FROM civicrm_batch b
+        INNER JOIN civicrm_easybatch_entity e ON e.batch_id = b.id AND b.id = {$batchId}
+          AND b.status_id = {$openStatusID} AND e.is_automatic = 1
+    ";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
 }

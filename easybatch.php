@@ -198,6 +198,36 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
  */
 function easybatch_civicrm_buildForm($formName, &$form) {
 
+  if ('CRM_Financial_Form_Export' == $formName) {
+    $batchId = $form->getVar('_id');
+    if ($batchId) {
+      if (CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
+        CRM_Core_Error::fatal(ts('You cannot export auto open batch.'));
+      }
+    }
+    else {
+      $batchIds = explode(',', $form->getVar('_batchIds'));
+      $isAutoOpenBatch = FALSE;
+      foreach ($batchIds as $key => $batchId) {
+        if (CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($batchId)) {
+          unset($batchIds[$key]);
+          $isAutoOpenBatch = TRUE;
+        }
+      }
+      $form->setVar('_batchIds', implode(',', $batchIds));
+      $batchNames = CRM_Batch_BAO_Batch::getBatchNames($form->getVar('_batchIds'));
+      $form->assign('batchNames', $batchNames);
+      if ($isAutoOpenBatch) {
+        if (!$batchIds) {
+          CRM_Core_Error::fatal(ts('You cannot export auto open batch(s).'));
+        }
+        else {
+          CRM_Core_Session::setStatus(ts('Some batches cannot be exported since they are used as auto batch.'), ts('Batch Update'), 'warning');
+        }
+      }
+    }
+  }
+
   // Batch create form.
   if ($formName == 'CRM_Financial_Form_FinancialBatch') {
     $form->addEntityRef('created_id', ts('Owner'), array(
@@ -437,6 +467,18 @@ function easybatch_civicrm_postProcess($formName, &$form) {
  *
  */
 function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if ($objectName == 'Batch' && in_array($op, array('edit'))) {
+    $action = CRM_Core_Smarty::singleton()->get_template_vars('batchAction');
+    if ($action) {
+      $msg = '';
+      if ($op == 'edit') {
+        //$objectRef = NULL;
+        $msg = 'Auto open batch cannot be closed or exported.';
+      }
+      CRM_Core_Session::setStatus(ts($msg), ts('Batch Update'), 'error');
+    }
+  }
+
   if ($objectName == 'FinancialAccount' && in_array($op, array('create', 'edit'))) {
     $sql = "SELECT contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
     $dao = CRM_Core_DAO::executeQuery($sql);
@@ -465,4 +507,66 @@ function easybatch_civicrm_postSave_civicrm_financial_trxn($dao) {
   else {
     CRM_EasyBatch_BAO_EasyBatch::addTransactionsToAutoBatch($dao);
   }
+}
+
+/**
+ * Implements hook_civicrm_entityTypes().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
+ *
+ */
+function easybatch_civicrm_entityTypes(&$entityTypes) {
+  $entityTypes[] = array(
+    'name'  => 'EasyBatchEntity',
+    'class' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
+    'table' => 'civicrm_easybatch_entity',
+  );
+}
+
+/**
+ * Implements hook_civicrm_pre().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_pre
+ *
+ */
+function easybatch_civicrm_pre($op, $objectName, &$objectId, &$params) {
+  if ($objectName == 'Batch' && in_array($op, array('edit', 'delete'))) {
+    if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
+      return FALSE;
+    }
+    if ($op == 'edit') {
+      $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
+      $params['status_id'] = $openStatusID;
+      CRM_Core_Smarty::singleton()->assign('batchAction', TRUE);
+    }
+    if ($op == 'delete') {
+      throw new CRM_Core_Exception(ts("Auto open batch cannot be deleted."));
+    }
+  }
+}
+
+/**
+ * Implements hook_civicrm_apiWrappers().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_apiWrappers
+ *
+ */
+function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
+  if ($apiRequest['entity'] == 'Batch' && $apiRequest['action'] == 'get') {
+  }
+}
+
+function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = array()) {
+  if ($objectName == 'Batch' && 'batch.selector.row' == $op) {
+    if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
+      return FALSE;
+    }
+    foreach ($links as $id => $link) {
+      if (in_array(strtolower($link['name']), array('edit', 'export', 'close'))) {
+        unset($links[$id]);
+      }
+    }
+  }
+
+
 }

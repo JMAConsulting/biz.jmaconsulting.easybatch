@@ -121,11 +121,12 @@ class CRM_EasyBatch_DAO_EasyBatchEntity extends CRM_Core_DAO {
         'batch_id' => array(
           'name' => 'batch_id',
           'type' => CRM_Utils_Type::T_INT,
+          'title' => ts('Batch ID') ,
           'description' => 'FK to Batch ID',
           'required' => true,
           'table_name' => 'civicrm_easybatch_entity',
           'entity' => 'EasyBatchEntity',
-          'bao' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
+          'bao' => 'CRM_EasyBatch_BAO_EasyBatch',
           'localizable' => 0,
           'FKClassName' => 'CRM_Batch_DAO_Batch',
         ) ,
