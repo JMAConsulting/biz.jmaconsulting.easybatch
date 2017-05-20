@@ -311,6 +311,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
           'id' => $dao->batch_id,
           'status_id' => $batchStatus,
           'force_close' => TRUE,
+          'modified_id' => CRM_Core_Session::singleton()->get('userID'),
         ));
         $closed[] = $dao->batch_id;
         if ($dao->payment_processor_id) {
