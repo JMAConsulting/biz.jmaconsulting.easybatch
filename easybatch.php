@@ -242,7 +242,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       ),
     ));
 
-    $form->addDate('batch_date', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->addDate('batch_date', ts('Batch Date'), FALSE, array('formatType' => 'activityDate'));
     CRM_Core_Region::instance('page-body')->add(array(
       'template' => 'CRM/EasyBatch/Form/ContactRef.tpl',
     ));
@@ -406,10 +406,13 @@ function easybatch_civicrm_postProcess($formName, &$form) {
   if ($formName == "CRM_Financial_Form_FinancialBatch") {
     $batchDate = CRM_Utils_Array::value('batch_date', $form->_submitValues, NULL);
     $params = array(
-      'contact_id' => CRM_Utils_Array::value('org_id', $form->_submitValues, NULL),
+      'contact_id' => NULL,
       'batch_date' => CRM_Utils_Date::processDate($batchDate),
       'batch_id' => $form->getVar('_id'),
     );
+    if (!CRM_Utils_System::isNull($form->_submitValues['org_id'])) {
+      $params['contact_id'] = $form->_submitValues['org_id'];
+    }
     CRM_EasyBatch_BAO_EasyBatch::create($params);
   }
 
@@ -564,7 +567,7 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       return FALSE;
     }
     foreach ($links as $id => $link) {
-      if (in_array(strtolower($link['name']), array('edit', 'export', 'close'))) {
+      if (in_array(strtolower($link['name']), array('edit', 'export', 'close', 'delete'))) {
         unset($links[$id]);
       }
     }

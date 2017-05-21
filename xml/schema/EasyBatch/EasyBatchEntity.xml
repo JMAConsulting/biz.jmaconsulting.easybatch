@@ -31,7 +31,6 @@
   <field>
     <name>contact_id</name>
     <type>int unsigned</type>
-    <required>true</required>
     <comment>FA organization id</comment>
   </field>
   <foreignKey>
@@ -56,5 +55,14 @@
     <type>boolean</type>
     <required>true</required>
     <default>0</default>
+  </field>
+  <field>
+    <name>batch_date</name>
+    <title>Batch Date</title>
+    <type>datetime</type>
+    <comment>When was this item created</comment>
+    <html>
+      <type>Select Date</type>
+    </html>
   </field>
 </table>

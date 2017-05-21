@@ -8,6 +8,7 @@ CREATE TABLE  IF NOT EXISTS `civicrm_easybatch_entity` (
   `contact_id` int unsigned  COMMENT 'FA organization id',
   `payment_processor_id` int unsigned    COMMENT 'FK payment processor id',
   `is_automatic` tinyint NOT NULL  DEFAULT 0,
+  `batch_date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT FK_civicrm_easybatch_entity_batch_id FOREIGN KEY (`batch_id`)
     REFERENCES `civicrm_batch`(`id`) ON DELETE CASCADE,
