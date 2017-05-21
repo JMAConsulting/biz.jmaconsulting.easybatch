@@ -255,6 +255,9 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       $defaults = array(
         'org_id' => CRM_Utils_Array::value('contact_id', $values),
       );
+      if (!empty($values['batch_date'])) {
+        list($defaults['batch_date'], $defaults['batch_date_time']) = CRM_Utils_Date::setDateDefaults($values['batch_date'], 'activityDate');
+      }
     }
     $form->setDefaults($defaults);
   }
@@ -267,9 +270,20 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         'params' => array('contact_type' => 'Organization'),
       ),
     ));
-    $form->addDate('batch_date', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('text', 'batch_date', ts('Batch Date'));
+    $form->addDate('batch_date_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $updatedElements = array();
+    $elements = $form->get_template_vars('elements');
+    foreach ($elements as $element) {
+      $updatedElements[] = $element;
+      if ($element == 'status_id') {
+        $updatedElements[] = 'batch_date';
+        $updatedElements[] = 'org_id';  
+      }
+    }
+    $form->assign('elements', $updatedElements);
     CRM_Core_Region::instance('page-body')->add(array(
-      'template' => 'CRM/EasyBatch/Form/ContactRef.tpl',
+      'template' => 'CRM/EasyBatch/Form/BatchSearch.tpl',
     ));
   }
 
@@ -410,6 +424,10 @@ function easybatch_civicrm_postProcess($formName, &$form) {
       'batch_date' => CRM_Utils_Date::processDate($batchDate),
       'batch_id' => $form->getVar('_id'),
     );
+    $id = CRM_Core_DAO::getFieldValue('CRM_EasyBatch_DAO_EasyBatchEntity', $form->getVar('_id'), 'id', 'batch_id');
+    if ($id) {
+      $params['id'] = $id;
+    }
     if (!CRM_Utils_System::isNull($form->_submitValues['org_id'])) {
       $params['contact_id'] = $form->_submitValues['org_id'];
     }

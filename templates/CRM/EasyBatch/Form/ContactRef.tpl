@@ -16,15 +16,6 @@
 {literal}
 <script type="text/javascript">
 CRM.$(function($) {
-
-// Financial Batch search form
-$(".crm-financial-search-form-block-status_id")
-    .after($('tr.crm-financialbatch-form-block-org_id'));
-$(".crm-financial-search-form-block-status_id")
-    .after($('tr.crm-financialbatch-form-block-batch_date'));
-$(".crm-financial-search-form-block-total")
-    .after($('tr.crm-financial-search-form-block-sort_name'));
-
 // Batch create form
 $(".crm-contribution-form-block-name")
     .after($('tr.crm-financialbatch-form-block-created_id'));
