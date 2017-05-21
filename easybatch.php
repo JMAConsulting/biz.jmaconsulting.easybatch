@@ -197,7 +197,6 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
  *
  */
 function easybatch_civicrm_buildForm($formName, &$form) {
-
   if ('CRM_Financial_Form_Export' == $formName) {
     $batchId = $form->getVar('_id');
     if ($batchId) {
@@ -576,6 +575,7 @@ function easybatch_civicrm_pre($op, $objectName, &$objectId, &$params) {
  */
 function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
   if ($apiRequest['entity'] == 'Batch' && $apiRequest['action'] == 'get') {
+    $wrappers[] = new CRM_EasyBatch_BatchAPIWrapper();
   }
 }
 
