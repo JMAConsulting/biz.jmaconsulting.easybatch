@@ -590,6 +590,4 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       }
     }
   }
-
-
 }
