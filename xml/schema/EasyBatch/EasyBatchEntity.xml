@@ -60,7 +60,7 @@
     <name>batch_date</name>
     <title>Batch Date</title>
     <type>datetime</type>
-    <comment>When was this item created</comment>
+    <comment>Date for the transactions to be included in the batch.</comment>
     <html>
       <type>Select Date</type>
     </html>

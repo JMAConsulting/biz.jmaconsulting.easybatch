@@ -168,7 +168,7 @@ class CRM_EasyBatch_DAO_EasyBatchEntity extends CRM_Core_DAO {
           'name' => 'batch_date',
           'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
           'title' => ts('Batch Date') ,
-          'description' => 'When was this item created',
+          'description' => 'Date for the transactions to be included in the batch.',
           'table_name' => 'civicrm_easybatch_entity',
           'entity' => 'EasyBatchEntity',
           'bao' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
