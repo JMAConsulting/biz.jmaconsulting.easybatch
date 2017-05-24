@@ -9,7 +9,6 @@
       	$('#batch_date').change();
       });
       $(document).ajaxSuccess(function( event, xhr, settings ) { 
-        console.log(xhr);
       });
     });
   </script>

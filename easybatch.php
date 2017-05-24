@@ -200,7 +200,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
   if ('CRM_Financial_Form_Export' == $formName) {
     $batchId = $form->getVar('_id');
     if ($batchId) {
-      if (CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
+      if (CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($batchId)) {
         CRM_Core_Error::fatal(ts('You cannot export auto open batch.'));
       }
     }
