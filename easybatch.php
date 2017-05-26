@@ -307,6 +307,9 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     if ($form->_mode) {
       return FALSE;
     }
+    if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
+      return FALSE;
+    }
     if ($formName == 'CRM_Contribute_Form_AdditionalPayment'
       && $form->getVar('_view') == 'transaction'
       && ($form->_action & CRM_Core_Action::BROWSE)
@@ -389,6 +392,9 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     "CRM_Contribute_Form_AdditionalPayment"
   ))) {
     if ($form->_mode) {
+      return FALSE;
+    }
+    if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
       return FALSE;
     }
     if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
