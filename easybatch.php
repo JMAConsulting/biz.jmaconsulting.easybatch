@@ -540,7 +540,7 @@ function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  */
 function easybatch_civicrm_postSave_civicrm_financial_trxn($dao) {
   $backendFormSubmit = CRM_Core_Smarty::singleton()->get_template_vars('backendFormSubmit');
-  if ($backendFormSubmit) {
+  if ($backendFormSubmit && $dao->is_payment) {
     $financialEasyBatchId = CRM_Core_Smarty::singleton()->get_template_vars('financialEasyBatchId');
     if ($financialEasyBatchId) {
       CRM_EasyBatch_BAO_EasyBatch::addTransactionsToBatch($financialEasyBatchId, $dao->id);
