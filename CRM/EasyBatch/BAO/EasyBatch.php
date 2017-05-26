@@ -367,4 +367,30 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     ";
     return CRM_Core_DAO::singleValueQuery($sql);
   }
+
+  /**
+   * get batch id for last payment.
+   */
+  public static function getBatchIDForContribution($contributionID) {
+    $result = civicrm_api3('EntityFinancialTrxn', 'get', array(
+      'return' => array("financial_trxn_id"),
+      'entity_table' => "civicrm_contribution",
+      'entity_id' => $contributionID,
+      'financial_trxn_id.is_payment' => 1,
+      'options' => array('limit' => 1, 'sort' => "financial_trxn_id DESC"),
+    ));
+    $batchId = NULL;
+    if ($result['values']) {
+      $financialTrxnId = $result['values'][$result['id']]['financial_trxn_id'];
+      $result = civicrm_api3('EntityBatch', 'get', array(
+        'return' => array("batch_id"),
+        'entity_table' => "civicrm_financial_trxn",
+        'entity_id' => $financialTrxnId,
+      ));
+      if ($result['values']) {
+        $batchId = $result['values'][$result['id']]['batch_id'];
+      }
+    }
+    return $batchId;
+  }
 }

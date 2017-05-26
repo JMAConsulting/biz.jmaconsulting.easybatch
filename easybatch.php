@@ -334,6 +334,10 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       if (count($batches) == 1) {
         $form->setDefaults(array('financial_batch_id' => reset($batches)));
       }
+      if ($form->getVar('_action') & CRM_Core_Action::UPDATE) {
+        $batchId = CRM_EasyBatch_BAO_EasyBatch::getBatchIDForContribution($form->getVar('_id'));
+        $form->setDefaults(array('financial_batch_id' => $batchId));
+      }
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
       ));
