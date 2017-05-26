@@ -303,7 +303,6 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     "CRM_Event_Form_Participant",
     "CRM_Contribute_Form_AdditionalPayment"
   ))) {
-
     if ($form->_mode) {
       return FALSE;
     }
@@ -319,7 +318,12 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
     if (Civi::settings()->get('display_financial_batch')) {
       $isRequired = FALSE;
-      if (Civi::settings()->get('require_financial_batch')) {
+      if (Civi::settings()->get('require_financial_batch')
+        && in_array($formName, array(
+          "CRM_Contribute_Form_Contribution",
+          "CRM_Contribute_Form_AdditionalPayment"
+        ))
+      ) {
         $isRequired = TRUE;
       }
 
@@ -399,6 +403,14 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
       return FALSE;
     }
     if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
+      return FALSE;
+    }
+    if (in_array($formName, array(
+        "CRM_Member_Form_Membership",
+        "CRM_Event_Form_Participant",
+      ))
+      && !CRM_Utils_Array::value('record_contribution', $fields)
+    ) {
       return FALSE;
     }
     if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
