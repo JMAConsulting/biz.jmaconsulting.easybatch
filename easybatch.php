@@ -602,7 +602,20 @@ function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
 }
 
 function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = array()) {
-  if ($objectName == 'Batch' && 'batch.selector.row' == $op) {
+  if ($objectName == 'Batch' && 'batch.selector.row' == $op) {;
+    $easyBatches = CRM_Core_Smarty::singleton()->get_template_vars('easyBatch');
+    $company = CRM_Utils_Array::value('org_id', CRM_Utils_Array::value($objectId, $easyBatches));
+    $date = CRM_Utils_Array::value('batch_date', CRM_Utils_Array::value($objectId, $easyBatches));
+    $dateFormat = Civi::settings()->get('dateformatFinancialBatch');
+    $date =  CRM_Utils_Date::customFormat($date, $dateFormat);
+    $links[] = array(
+      'name' => '',
+      'url' => '',
+      'qs' => '',
+      'title' => '',
+      'ref' => " rowBatchData-{$objectId}",
+      'extra' => " style='Display:none;' company ='{$company}' batchDate = '{$date}'",
+    );
     if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
       return FALSE;
     }
