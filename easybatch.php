@@ -234,12 +234,10 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       'api' => array('extra' => array('email')),
     ), TRUE);
 
-    $form->addEntityRef('org_id', ts('Company'), array(
-      'create' => FALSE,
-      'api' => array(
-        'params' => array('contact_type' => 'Organization'),
-      ),
-    ));
+    $form->add('select', 'org_id', ts('Company'),
+      CRM_Financial_BAO_FinancialAccount::getOrganizationNames(),
+      FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
+    );
 
     $form->addDate('batch_date', ts('Batch Date'), FALSE, array('formatType' => 'activityDate'));
     CRM_Core_Region::instance('page-body')->add(array(
