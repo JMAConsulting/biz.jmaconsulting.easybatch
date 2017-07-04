@@ -147,7 +147,7 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'quick_form_type' => 'Element',
     'default' => 0,
     'add' => '4.7',
-    'title' => 'Display Financial Batch of Backoffice forms?',
+    'title' => 'Display Financial Batch on Backoffice forms?',
     'is_domain' => 1,
     'is_contact' => 0,
     'description' => '',
@@ -162,7 +162,7 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
     'quick_form_type' => 'Element',
     'default' => 0,
     'add' => '4.7',
-    'title' => 'Require Financial Batch of Backoffice forms?',
+    'title' => 'Require Financial Batch on Backoffice forms?',
     'is_domain' => 1,
     'is_contact' => 0,
     'description' => '',
@@ -245,7 +245,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     ));
     $batchId = $form->getVar('_id');
     if (!$batchId) {
-      $defaults = array('created_id' => CRM_Core_Session::singleton()->get('userID')); 
+      $defaults = array('created_id' => CRM_Core_Session::singleton()->get('userID'));
     }
     else {
       $values = CRM_EasyBatch_BAO_EasyBatch::retrieve(array('batch_id' => $batchId));
@@ -275,7 +275,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       $updatedElements[] = $element;
       if ($element == 'status_id') {
         $updatedElements[] = 'batch_date';
-        $updatedElements[] = 'org_id';  
+        $updatedElements[] = 'org_id';
       }
     }
     $form->assign('elements', $updatedElements);
@@ -358,7 +358,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     $form->add('checkbox', 'auto_financial_batch', ts('Create Automatic Daily Financial Batches?'));
     $form->addDate('batch_close_time', ts('Automatic Daily Batch Close Time'), FALSE, array('formatType' => 'activityDateTime'));
     $paymentProcessorId = $form->getVar('_id');
-    if ($paymentProcessorId 
+    if ($paymentProcessorId
       && Civi::settings()->get("pp_auto_financial_batch_{$paymentProcessorId}")
     ) {
       $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($paymentProcessorId);
@@ -373,7 +373,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       'template' => 'CRM/Admin/Form/PaymentProcessorExtra.tpl',
     ));
   }
-      
+
 }
 
 /**
