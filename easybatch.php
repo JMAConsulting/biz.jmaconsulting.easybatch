@@ -299,7 +299,8 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     "CRM_Contribute_Form_Contribution",
     "CRM_Member_Form_Membership",
     "CRM_Event_Form_Participant",
-    "CRM_Contribute_Form_AdditionalPayment"
+    "CRM_Contribute_Form_AdditionalPayment",
+    "CRM_Member_Form_MembershipRenewal",
   ))) {
     if ($form->_mode) {
       return FALSE;
@@ -395,7 +396,8 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     "CRM_Contribute_Form_Contribution",
     "CRM_Member_Form_Membership",
     "CRM_Event_Form_Participant",
-    "CRM_Contribute_Form_AdditionalPayment"
+    "CRM_Contribute_Form_AdditionalPayment",
+    "CRM_Member_Form_MembershipRenewal",
   ))) {
     if ($form->_mode) {
       return FALSE;
@@ -406,6 +408,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     if (in_array($formName, array(
         "CRM_Member_Form_Membership",
         "CRM_Event_Form_Participant",
+        "CRM_Member_Form_MembershipRenewal",
       ))
       && !CRM_Utils_Array::value('record_contribution', $fields)
     ) {
@@ -429,7 +432,8 @@ function easybatch_civicrm_postProcess($formName, &$form) {
     "CRM_Contribute_Form_Contribution",
     "CRM_Member_Form_Membership",
     "CRM_Event_Form_Participant",
-    "CRM_Contribute_Form_AdditionalPayment"
+    "CRM_Contribute_Form_AdditionalPayment",
+    "CRM_Member_Form_MembershipRenewal",
   ))) {
     $form->assign('financialEasyBatchId', NULL);
     $form->assign('backendFormSubmit', NULL);

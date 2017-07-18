@@ -10,7 +10,7 @@ CRM.$(function($) {
   var batchLabelHtml = $('#batchLabel').html();
   var batchContentHtml = $('#batchContent').html();
   // Contribution.
-  $(".crm-contribution-form-block-receive_date, .crm-payment-form-block-trxn_date, .crm-membership-form-block-receive_date")
+  $(".crm-contribution-form-block-receive_date, .crm-payment-form-block-trxn_date, .crm-membership-form-block-receive_date, .crm-membershiprenew-form-block-receive_date")
     .after($('tr.crm-contribution-form-block-batch_id'));
 
   // Event.
