@@ -162,7 +162,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     else {
       if (Civi::settings()->get("auto_batch_non_payment_trxns")) {
         $financialAccountId = empty($financialTrxn->from_financial_account_id) ? $financialTrxn->to_financial_account_id : $financialTrxn->from_financial_account_id;
-      
+        if (!$financialAccountId) return;
         $contactId = civicrm_api3('FinancialAccount', 'getSingle', array(
           'return' => array("contact_id"),
           'id' => $financialAccountId,
