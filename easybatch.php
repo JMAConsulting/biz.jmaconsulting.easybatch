@@ -354,9 +354,25 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         $batchId = CRM_EasyBatch_BAO_EasyBatch::getBatchIDForContribution($form->getVar('_id'));
         $form->setDefaults(array('financial_batch_id' => $batchId));
       }
+
+      $nonPaymentStatuses = array();
+      foreach(CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name') as $statusID => $name) {
+        if (in_array($name, array(
+          'Cancelled',
+          'Failed',
+          'Pending Refund',
+          'Refunded',
+          'Pending',
+        ))) {
+          $nonPaymentStatuses[] = $statusID;
+        }
+      }
+      $form->assign('statuses', json_encode($nonPaymentStatuses));
+
       CRM_Core_Region::instance('page-body')->add(array(
         'template' => 'CRM/EasyBatch/Form/FinancialBatch.tpl',
       ));
+
       if ($form->_flagSubmitted) {
         $form->assign('backendFormSubmit', TRUE);
         $batchId = CRM_Utils_Array::value('financial_batch_id', $form->_submitValues);

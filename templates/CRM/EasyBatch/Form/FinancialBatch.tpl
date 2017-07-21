@@ -7,6 +7,12 @@
 {literal}
 <script type="text/javascript">
 CRM.$(function($) {
+  hideBatch($('#contribution_status_id'));
+  $('#contribution_status_id').change(function() {
+    hideBatch($(this));
+  })
+  var batchLabelHtml = $('#batchLabel').html();
+  var batchContentHtml = $('#batchContent').html();
   // Contribution.
   $(".crm-contribution-form-block-receive_date, .crm-payment-form-block-trxn_date, .crm-membership-form-block-receive_date, .crm-membershiprenew-form-block-receive_date")
     .after($('tr.crm-contribution-form-block-batch_id'));
@@ -20,6 +26,12 @@ CRM.$(function($) {
         .before($('.crm-contribution-form-block-batch_id').parent().html());
     }
   });
+
+  function hideBatch($ele) {
+    var statusID = parseInt($ele.val());
+    var nonPaymentStatuses = {/literal}{$statuses}{literal};
+    $('.crm-contribution-form-block-batch_id').toggle(!($.inArray(parseInt($ele.val()), nonPaymentStatuses) > -1));
+  }
 });
 </script>
 {/literal}
