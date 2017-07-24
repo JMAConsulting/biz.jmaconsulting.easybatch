@@ -199,9 +199,10 @@ function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, 
 function easybatch_civicrm_buildForm($formName, &$form) {
   if ('CRM_Financial_Form_Export' == $formName) {
     $batchId = $form->getVar('_id');
+    $isRedirect = FALSE;
     if ($batchId) {
       if (CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($batchId)) {
-        CRM_Core_Error::fatal(ts('You cannot export auto open batch.'));
+        $isRedirect = TRUE;
       }
     }
     else {
@@ -214,16 +215,27 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         }
       }
       $form->setVar('_batchIds', implode(',', $batchIds));
-      $batchNames = CRM_Batch_BAO_Batch::getBatchNames($form->getVar('_batchIds'));
+      $batchNames = array();
+      if ($batchIds) {
+        $batchNames = CRM_Batch_BAO_Batch::getBatchNames($batchIds);
+      }
       $form->assign('batchNames', $batchNames);
       if ($isAutoOpenBatch) {
         if (!$batchIds) {
-          CRM_Core_Error::fatal(ts('You cannot export auto open batch(s).'));
+          $isRedirect = TRUE;
         }
         else {
           CRM_Core_Session::setStatus(ts('Some batches cannot be exported since they are used as auto batch.'), ts('Batch Update'), 'warning');
         }
       }
+    }
+    if ($isRedirect) {
+      $openBatchStatusId = CRM_Core_PseudoConstant::getKey(
+        'CRM_Batch_BAO_Batch',
+        'status_id',
+        'Open'
+       );
+      CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm/financial/financialbatches', "reset=1&batchStatus={$openBatchStatusId}"));
     }
   }
 
