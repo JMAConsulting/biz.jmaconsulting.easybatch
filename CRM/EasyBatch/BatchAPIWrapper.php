@@ -55,10 +55,10 @@ class CRM_EasyBatch_BatchAPIWrapper implements API_Wrapper {
     }
     else {
       if (!empty($postValues['batch_date_from'])) {
-        $params['batch_date'] = $postValues['batch_date_from'];
+        $params['batch_date'] = array('>=' => $postValues['batch_date_from']);
       }
-      else {
-        $params['batch_date'] = $postValues['batch_date_to'];
+      elseif (!empty($postValues['batch_date_to'])) {
+        $params['batch_date'] = array('<=' => $postValues['batch_date_to']);
       }
     }
     if (!empty($postValues['org_id'])) {
