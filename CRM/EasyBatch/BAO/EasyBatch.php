@@ -239,6 +239,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'batch_id' => $batch['id'],
       'contact_id' => $contactId,
       'is_automatic' => TRUE,
+      'batch_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
       'payment_processor_id' => $paymentProcessorID,
     );
     self::create($entityBatchParams);
