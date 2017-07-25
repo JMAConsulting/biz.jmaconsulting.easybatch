@@ -232,6 +232,8 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'status_id' => "Open",
       'created_id' => CRM_Core_Session::singleton()->get('userID'),
       'created_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
+      'total' => 0.00,
+      'item_count' => 0,
     );
 
     $batch = civicrm_api3('Batch', 'create', $params);
