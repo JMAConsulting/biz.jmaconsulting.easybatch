@@ -1,12 +1,18 @@
-<div id="batchclosetime">{include file="CRM/common/jcalendar.tpl" elementName=batch_date_hidden}</div>
+<div id="batchclosetime"><div id="batchclosetimefrom" style="float:left">{include file="CRM/common/jcalendar.tpl" elementName=batch_date_from_hidden}</div> <div id="batchclosetimeto" style="overflow:hidden"><span id="totext">to</span> {include file="CRM/common/jcalendar.tpl" elementName=batch_date_to_hidden}</div></div>
 {literal}
   <script type="text/javascript">
     CRM.$(function($) {
-      $('#batch_date').hide();
-      $($('#batchclosetime')).insertAfter('.crm-financial-search-form-block-batch_date td:nth-child(2) #batch_date');
-      $('#batchclosetime .dateplugin').change(function(){
-        $('#batch_date').val($(this).val());
-      	$('#batch_date').change();
+      $('#batch_date_from').hide();
+      $('#batch_date_to').hide();
+      $('tr.crm-financial-search-form-block-batch_date_to').hide();
+      $($('#batchclosetime')).insertAfter('.crm-financial-search-form-block-batch_date_from td:nth-child(2) #batch_date_from');
+      $('#batchclosetimefrom .dateplugin').change(function(){
+        $('#batch_date_from').val($(this).val());
+	$('#batch_date_from').change();
+      });
+      $('#batchclosetimeto .dateplugin').change(function(){
+        $('#batch_date_to').val($(this).val());
+	$('#batch_date_to').change();
       });
       $(document).ajaxSuccess(function(event, xhr, settings) {
         $('#crm-batch-selector-1 thead th.crm-batch-company').remove();

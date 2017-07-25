@@ -279,14 +279,17 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         'params' => array('contact_type' => 'Organization'),
       ),
     ));
-    $form->add('text', 'batch_date', ts('Batch Date'));
-    $form->addDate('batch_date_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('text', 'batch_date_from', ts('Batch Date from'));
+    $form->addDate('batch_date_from_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('text', 'batch_date_to', ts('Batch Date to'));
+    $form->addDate('batch_date_to_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
     $updatedElements = array();
     $elements = $form->get_template_vars('elements');
     foreach ($elements as $element) {
       $updatedElements[] = $element;
       if ($element == 'status_id') {
-        $updatedElements[] = 'batch_date';
+        $updatedElements[] = 'batch_date_from';
+        $updatedElements[] = 'batch_date_to';
         $updatedElements[] = 'org_id';
       }
     }

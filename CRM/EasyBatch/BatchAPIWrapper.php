@@ -17,7 +17,7 @@ class CRM_EasyBatch_BatchAPIWrapper implements API_Wrapper {
     }
     $params = $easyBatches = array();
     $postValues = $_REQUEST;
-    if (empty($postValues['org_id']) && empty($postValues['batch_date'])) {
+    if (empty($postValues['org_id']) && empty($postValues['batch_date_from']) && empty('batch_date_to')) {
       if (is_array($result['values'])) {
         foreach ($result['values'] as $id => $values) {
           $resultsBatch = civicrm_api3('EasyBatchEntity', 'get', array('batch_id' => $values['id'], 'return' => array('contact_id.sort_name', 'batch_date')));
@@ -50,8 +50,16 @@ class CRM_EasyBatch_BatchAPIWrapper implements API_Wrapper {
     }
     $params['return'][] = 'contact_id.sort_name';
     $params['return'][] = 'batch_date';
-    if (!empty($postValues['batch_date'])) {
-      $params['batch_date'] = $postValues['batch_date'];
+    if (!empty($postValues['batch_date_from']) && !empty($postValues['batch_date_to'])) {
+      $params['batch_date'] = array('BETWEEN' => array($postValues['batch_date_from'], $postValues['batch_date_to']));
+    }
+    else {
+      if (!empty($postValues['batch_date_from'])) {
+        $params['batch_date'] = $postValues['batch_date_from'];
+      }
+      else {
+        $params['batch_date'] = $postValues['batch_date_to'];
+      }
     }
     if (!empty($postValues['org_id'])) {
       $params['contact_id'] = $postValues['org_id'];
