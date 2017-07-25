@@ -433,6 +433,13 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
   }
+  if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {
+    if ($form->_defaultValues['org_id'] != CRM_Utils_Array::value('org', $fields)) {
+      if (CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'))) {
+        $errors['org_id'] = ts("Cannot change company since there are one or more transactions assigned to batch.");
+      }
+    }
+  }
 }
 
 /**

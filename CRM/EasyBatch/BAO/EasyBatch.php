@@ -394,4 +394,14 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
     return $batchId;
   }
+
+  /**
+   * Check if batch edited has transactions assigned to it.
+   */
+  public static function checkTransactions($batchID) {
+    $count = civicrm_api3('EntityBatch', 'getCount', array(
+      'batch_id' => $batchID,
+    ));
+    return $count;
+  }
 }
