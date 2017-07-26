@@ -434,7 +434,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
   }
   if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {
-    if ($form->_defaultValues['org_id'] != CRM_Utils_Array::value('org', $fields)) {
+    if ($form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'))) {
         $errors['org_id'] = ts("Cannot change company since there are one or more transactions assigned to batch.");
       }
