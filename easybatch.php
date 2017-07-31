@@ -247,7 +247,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     ), TRUE);
 
     $form->add('select', 'org_id', ts('Company'),
-      CRM_Financial_BAO_FinancialAccount::getOrganizationNames(),
+      CRM_Financial_BAO_FinancialAccount::getOrganizationNames(FALSE),
       FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
     );
 
