@@ -223,9 +223,11 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     $title = CRM_Batch_BAO_Batch::generateBatchName();
     if ($paymentProcessorID) {
       $title .= " {$suffixName} " . ts('Auto');
+      $batchDate = CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s"));
     }
     else {
       $title .= ts(' non-payment transactions auto') . " {$suffixName}";
+      $batchDate = CRM_Utils_Date::processDate(date("Y-m-01"), date("H:i:s"));
     }
     $params = array(
       'title' => $title,
@@ -241,7 +243,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'batch_id' => $batch['id'],
       'contact_id' => $contactId,
       'is_automatic' => TRUE,
-      'batch_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
+      'batch_date' => $batchDate,
       'payment_processor_id' => $paymentProcessorID,
     );
     self::create($entityBatchParams);
