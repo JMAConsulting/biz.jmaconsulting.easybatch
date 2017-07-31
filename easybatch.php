@@ -626,7 +626,7 @@ function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
 }
 
 function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = array()) {
-  if ($objectName == 'Batch' && 'batch.selector.row' == $op) {;
+  if ($objectName == 'Batch' && 'batch.selector.row' == $op) {
     $easyBatches = CRM_Core_Smarty::singleton()->get_template_vars('easyBatch');
     $company = CRM_Utils_Array::value('org_id', CRM_Utils_Array::value($objectId, $easyBatches));
     $date = CRM_Utils_Array::value('batch_date', CRM_Utils_Array::value($objectId, $easyBatches));

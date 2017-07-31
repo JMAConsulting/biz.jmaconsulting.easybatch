@@ -32,7 +32,26 @@ class CRM_EasyBatch_BatchAPIWrapper implements API_Wrapper {
       }
       return $result;
     }
-
+    if (empty($apiRequest['params']['return'])) {
+      $apiRequest['params']['return'] = array(
+        "id",
+        "name",
+        "title",
+        "description",
+        "created_date",
+        "status_id",
+        "modified_id",
+        "modified_date",
+        "type_id",
+        "mode_id",
+        "total",
+        "item_count",
+        "exported_date",
+        "payment_instrument_id",
+        "created_id.sort_name",
+        "created_id",
+      );
+    }
     foreach ($apiRequest['params'] as $key => $apiParam) {
       if (in_array($key, array('version', 'options', 'sequential'))) {
         $params[$key] = $apiParam;
