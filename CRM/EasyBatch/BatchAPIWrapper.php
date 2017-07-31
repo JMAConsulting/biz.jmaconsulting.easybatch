@@ -17,7 +17,7 @@ class CRM_EasyBatch_BatchAPIWrapper implements API_Wrapper {
     }
     $params = $easyBatches = array();
     $postValues = $_REQUEST;
-    if (empty($postValues['org_id']) && empty($postValues['batch_date_from']) && empty('batch_date_to')) {
+    if (empty($postValues['org_id']) && empty($postValues['batch_date_from']) && empty($postValues['batch_date_to'])) {
       if (is_array($result['values'])) {
         foreach ($result['values'] as $id => $values) {
           $resultsBatch = civicrm_api3('EasyBatchEntity', 'get', array('batch_id' => $values['id'], 'return' => array('contact_id.sort_name', 'batch_date')));
