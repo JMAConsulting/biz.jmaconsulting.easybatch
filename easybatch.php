@@ -241,11 +241,12 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Batch create form.
   if ($formName == 'CRM_Financial_Form_FinancialBatch') {
-    $form->addEntityRef('created_id', ts('Owner'), array(
-      'create' => TRUE,
-      'api' => array('extra' => array('email')),
-    ), TRUE);
-
+   if (CRM_Core_Permission::check('edit all manual batches')) {
+      $form->addEntityRef('created_id', ts('Owner'), array(
+        'create' => TRUE,
+        'api' => array('extra' => array('email')),
+      ), TRUE);
+    }
     $form->add('select', 'org_id', ts('Company'),
       CRM_Financial_BAO_FinancialAccount::getOrganizationNames(FALSE),
       FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
