@@ -305,7 +305,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
         if (!$jobRunDate) {
           $jobRunDate = date('YmdHis',strtotime("-1 days"));
         }
-        if ($jobRunDate < date('Ym01000000')) {
+        if ($jobRunDate > date('Ym01000000')) {
           continue;
         }
         $exportBatch[] = $dao->batch_id;
