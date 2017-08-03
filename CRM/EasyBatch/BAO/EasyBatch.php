@@ -431,4 +431,18 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
     return FALSE;
   }
+
+  public function checkBatchWithSameOrg($batchId, $paymentInstrumentId) {
+    $ownerID = CRM_Core_DAO::getFieldValue('CRM_EasyBatch_DAO_EasyBatchEntity', $batchId, 'contact_id', 'batch_id');
+    $financialAccountId = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($paymentInstrumentId);
+    $result = civicrm_api3('FinancialAccount', 'getsingle', array(
+      'return' => array("contact_id"),
+      'id' => $financialAccountId,
+    ));
+    if ($result['contact_id'] == $ownerID) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
 }

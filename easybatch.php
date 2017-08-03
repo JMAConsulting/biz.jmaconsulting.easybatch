@@ -433,6 +433,11 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
+    if (!empty($fields['financial_batch_id'])) {
+      if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields['payment_instrument_id'])) {
+        $errors['financial_batch_id'] = ts("Owner of selected payment method should match owner of Financial batch selected.");
+      }
+    }
   }
   if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {
     if (!empty($form->_defaultValues['org_id']) && $form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
