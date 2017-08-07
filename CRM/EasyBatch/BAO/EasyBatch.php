@@ -35,6 +35,7 @@
 class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
   static $_paymentMethodOwnerID = NULL;
+  static $_paymentProcessorOwnerID = NULL;
 
   public function __construct() {
     parent::__construct();
@@ -471,10 +472,15 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       }
     }
     $financialTypeOwnerID = self::getFinancialTypeOwnerID($financialTypeID);
-    if (empty($submitValues['payment_instrument_id'])) {
+    if (empty($submitValues['payment_instrument_id']) && empty($submitValues['payment_processor_id'])) {
       return NULL;
     }
-    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
+    if (!empty($submitValues['payment_processor_id'])) {
+      $paymentMethodOwnerID = self::getPaymentProcessorOwnerID($submitValues['payment_processor_id']);
+    }
+    else {
+      $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
+    }
     if ($financialTypeOwnerID != $paymentMethodOwnerID) {
       throw new CRM_Core_Exception(ts("Owner of Contribution Financial Type doesn't match with owner of selected Payment method."));
     }
@@ -490,6 +496,18 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       self::$_paymentMethodOwnerID[$paymentInstrumentId] = $result['contact_id'];
     }
     return self::$_paymentMethodOwnerID[$paymentInstrumentId];
+  }
+
+  public static function getPaymentProcessorOwnerID($processorId) {
+    if (empty(self::$_paymentProcessorOwnerID[$processorId])) {
+      $financialAccountId = CRM_Contribute_PseudoConstant::getRelationalFinancialAccount($processorId, NULL, 'civicrm_payment_processor');
+      $result = civicrm_api3('FinancialAccount', 'getsingle', array(
+        'return' => array("contact_id"),
+        'id' => $financialAccountId,
+      ));
+      self::$_paymentProcessorOwnerID[$processorId] = $result['contact_id'];
+    }
+    return self::$_paymentProcessorOwnerID[$processorId];
   }
 
   public static function getFinancialTypeOwnerID($financialTypeID) {

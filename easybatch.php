@@ -416,9 +416,6 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     "CRM_Member_Form_MembershipRenewal",
     "CRM_Event_Form_ParticipantFeeSelection",
   ))) {
-    if ($form->_mode) {
-      return FALSE;
-    }
     if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
       return FALSE;
     }
@@ -427,7 +424,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
         "CRM_Event_Form_Participant",
         "CRM_Member_Form_MembershipRenewal",
       ))
-      && !CRM_Utils_Array::value('record_contribution', $fields)
+      && !CRM_Utils_Array::value('record_contribution', $fields) && !$form->_mode
     ) {
       return FALSE;
     }
@@ -448,6 +445,9 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
     if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
       return NULL;
+    }
+    if ($form->_mode) {
+      return FALSE;
     }
     if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
