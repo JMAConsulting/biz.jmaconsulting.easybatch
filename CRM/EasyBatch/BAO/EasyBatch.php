@@ -34,6 +34,8 @@
  */
 class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
+  static $_paymentMethodOwnerID = NULL;
+
   public function __construct() {
     parent::__construct();
   }
@@ -432,17 +434,88 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     return FALSE;
   }
 
-  public function checkBatchWithSameOrg($batchId, $paymentInstrumentId) {
+  public static function checkBatchWithSameOrg($batchId, $paymentInstrumentId) {
+    if (empty($paymentInstrumentId)) {
+      return NULL;
+    }
     $ownerID = CRM_Core_DAO::getFieldValue('CRM_EasyBatch_DAO_EasyBatchEntity', $batchId, 'contact_id', 'batch_id');
-    $financialAccountId = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($paymentInstrumentId);
-    $result = civicrm_api3('FinancialAccount', 'getsingle', array(
-      'return' => array("contact_id"),
-      'id' => $financialAccountId,
-    ));
-    if ($result['contact_id'] == $ownerID) {
+    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($paymentInstrumentId);
+    if ($paymentMethodOwnerID == $ownerID) {
       return FALSE;
     }
     return TRUE;
+  }
+
+  public static function checkFTWithSameOrg($form, $submitValues) {
+    if (empty($submitValues['payment_instrument_id'])) {
+      return NULL;
+    }
+    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
+    $financialTypeID = CRM_Utils_Array::value('financial_type_id', $submitValues);
+    if (!empty($form->_priceSetId)) {
+      $priceSet = $form->_priceSet;
+      $financialTypeID = $priceSet['financial_type_id'];
+      $financialTypes[] = $financialTypeID;
+      $lineItem = array();
+      if (empty($form->_lineItems)) {
+	CRM_Price_BAO_PriceSet::processAmount($priceSet['fields'],
+        $submitValues, $lineItem[$form->_priceSetId]);
+      }
+      foreach ($lineItem as $lines) {
+        foreach ($lines as $item) {
+	  if (!in_array($item['financial_type_id'], $financialTypes)) {
+            $financialTypes[] = $item['financial_type_id'];
+          }
+	}
+      }
+      if (count($financialTypes) > 1) {
+        self::checkRevenueAndDeferredOwner($financialTypes);
+      }
+    }
+    $financialTypeOwnerID = self::getFinancialTypeOwnerID($financialTypeID);
+    if ($financialTypeOwnerID != $paymentMethodOwnerID) {
+      throw new CRM_Core_Exception(ts("Owner of Contribution Financial Type doesn't match with owner of selected Payment method."));
+    }
+  }
+
+  public static function getPaymentMethodOwnerID($paymentInstrumentId) {
+    if (empty(self::$_paymentMethodOwnerID[$paymentInstrumentId])) {
+      $financialAccountId = CRM_Financial_BAO_FinancialTypeAccount::getInstrumentFinancialAccount($paymentInstrumentId);
+      $result = civicrm_api3('FinancialAccount', 'getsingle', array(
+        'return' => array("contact_id"),
+        'id' => $financialAccountId,
+      ));
+      self::$_paymentMethodOwnerID[$paymentInstrumentId] = $result['contact_id'];
+    }
+    return self::$_paymentMethodOwnerID[$paymentInstrumentId];
+  }
+
+  public static function getFinancialTypeOwnerID($financialTypeID) {
+    $sql = "SELECT cfa.contact_id FROM civicrm_entity_financial_account cefa
+      INNER JOIN civicrm_financial_account cfa ON cefa.financial_account_id = cfa.id
+        AND cefa.entity_table = 'civicrm_financial_type' AND cefa.entity_id = {$financialTypeID}
+      GROUP BY cfa.contact_id
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    if ($dao->N > 1) {
+      throw new CRM_Core_Exception(ts("The selected Financial Type is configured with multiple Financial Account Owner."));
+    }
+    $dao->fetch();
+    return $dao->contact_id;
+  }
+
+  public static function checkRevenueAndDeferredOwner($financialTypes) {
+    $revenue = CRM_Core_PseudoConstant::getKey('CRM_Financial_BAO_FinancialTypeAccount', 'account_relationship', 'Income Account is');
+    $deferred = CRM_Core_PseudoConstant::getKey('CRM_Financial_BAO_FinancialTypeAccount', 'account_relationship', 'Deferred Revenue Account is');
+    $sql = "SELECT cfa.contact_id FROM civicrm_entity_financial_account cefa
+      INNER JOIN civicrm_financial_account cfa ON cefa.financial_account_id = cfa.id
+        AND cefa.entity_table = 'civicrm_financial_type'
+      WHERE cefa.entity_id IN (" . implode(', ', $financialTypes) . ") AND cefa.account_relationship IN ({$revenue}, {$deferred})
+      GROUP BY cfa.contact_id";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    if ($dao->N > 1) {
+      throw new CRM_Core_Exception(ts("The Line item selected have financial type with different Financial Account owner."));
+    }
   }
 
 }
