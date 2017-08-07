@@ -447,14 +447,12 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   public static function checkFTWithSameOrg($form, $submitValues) {
-    if (empty($submitValues['payment_instrument_id'])) {
-      return NULL;
-    }
-    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
     $financialTypeID = CRM_Utils_Array::value('financial_type_id', $submitValues);
     if (!empty($form->_priceSetId)) {
       $priceSet = $form->_priceSet;
-      $financialTypeID = $priceSet['financial_type_id'];
+      if (!$financialTypeID) {
+        $financialTypeID = $priceSet['financial_type_id'];
+      }
       $financialTypes[] = $financialTypeID;
       $lineItem = array();
       if (empty($form->_lineItems)) {
@@ -473,6 +471,10 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       }
     }
     $financialTypeOwnerID = self::getFinancialTypeOwnerID($financialTypeID);
+    if (empty($submitValues['payment_instrument_id'])) {
+      return NULL;
+    }
+    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
     if ($financialTypeOwnerID != $paymentMethodOwnerID) {
       throw new CRM_Core_Exception(ts("Owner of Contribution Financial Type doesn't match with owner of selected Payment method."));
     }

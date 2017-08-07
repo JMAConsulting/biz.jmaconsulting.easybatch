@@ -414,6 +414,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     "CRM_Event_Form_Participant",
     "CRM_Contribute_Form_AdditionalPayment",
     "CRM_Member_Form_MembershipRenewal",
+    "CRM_Event_Form_ParticipantFeeSelection",
   ))) {
     if ($form->_mode) {
       return FALSE;
@@ -430,17 +431,26 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     ) {
       return FALSE;
     }
-    if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
-      $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
+    $fieldName = 'payment_instrument_id';
+    if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
+      $fieldName = '_qf_default';
     }
-    if ($formName == 'CRM_Contribute_Form_AdditionalPayment') {
+    if (in_array($formName, array(
+      'CRM_Contribute_Form_AdditionalPayment',
+      'CRM_Event_Form_ParticipantFeeSelection'))
+    ) {
       $fields['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $form->getVar('_contributionId'), 'financial_type_id');
     }
     try {
       CRM_EasyBatch_BAO_EasyBatch::checkFTWithSameOrg($form, $fields);
     } catch (CRM_Core_Exception $e) {
-      $fieldName = 'payment_instrument_id';
       $errors[$fieldName] = $e->getMessage();
+    }
+    if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
+      return NULL;
+    }
+    if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
+      $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
     if (!empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields['payment_instrument_id'])) {
