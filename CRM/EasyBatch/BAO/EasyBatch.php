@@ -405,34 +405,27 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Check if batch edited has transactions assigned to it.
    */
-  public static function checkTransactions($batchID, $orgID = NULL) {
+  public static function checkTransactions($batchID, $orgID) {
     $count = civicrm_api3('EntityBatch', 'getCount', array(
       'batch_id' => $batchID,
     ));
-    if (empty($count)) {
-      // No transactions assigned yet, batch company can be changed.
-      return FALSE;
-    }
     // Transactions present. Check if transactions in batch match the batch company.
-    if ($orgID) {
-      $invalidOrg = FALSE;
+    if ($count) {
       $sql = "SELECT fa.contact_id FROM civicrm_entity_batch eb
         INNER JOIN civicrm_financial_trxn ft ON ft.id = eb.entity_id
+          AND eb.entity_table = 'civicrm_financial_trxn' AND eb.batch_id = {$batchID}
         INNER JOIN civicrm_financial_account fa ON fa.id = ft.to_financial_account_id
-        WHERE eb.batch_id = {$batchID}
         GROUP BY fa.contact_id";
       $dao = CRM_Core_DAO::executeQuery($sql);
-      while ($dao->fetch()) {
-        if ($orgID != $dao->contact_id) {
-          $invalidOrg = TRUE;
-          break;
-        }
+      if ($dao->N > 1) {
+        throw new CRM_Core_Exception(ts("All of the transactions in the batch are not associated with the same company."));
       }
-      if ($invalidOrg) {
-        return TRUE;
+      $dao->fetch();
+      if ($orgID != $dao->contact_id) {
+        $orgName = CRM_Contact_BAO_Contact::displayName($orgID);
+        throw new CRM_Core_Exception(ts("All of the transactions in the batch are not associated with the '{$orgName}' company."));
       }
     }
-    return FALSE;
   }
 
   public static function checkBatchWithSameOrg($batchId, $paymentInstrumentId) {

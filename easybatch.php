@@ -464,14 +464,11 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
   }
   if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {
-    if (!empty($form->_defaultValues['org_id']) && $form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
-      if (CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'))) {
-        $errors['org_id'] = ts("Cannot change company since there are one or more transactions assigned to batch.");
-      }
-    }
-    elseif (empty($form->_defaultValues['org_id']) && CRM_Utils_Array::value('org_id', $fields)) {
-      if (CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'), $fields['org_id'])) {
-        $errors['org_id'] = ts("All of the transactions in the batch are not associated with the same company.");
+    if ($form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
+      try {
+        CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'), $fields['org_id']);
+      } catch (CRM_Core_Exception $e) {
+        $errors['org_id'] = $e->getMessage();
       }
     }
   }
