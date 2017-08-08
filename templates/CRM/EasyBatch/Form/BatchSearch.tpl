@@ -15,11 +15,11 @@
 	$('#batch_date_to').change();
       });
       $(document).ajaxSuccess(function(event, xhr, settings) {
-        $('#crm-batch-selector-1 thead th.crm-batch-company').remove();
-        $('#crm-batch-selector-1 thead th.crm-batch-date').remove();
-        $("<th class = 'crm-batch-company' >Company</th>").insertAfter('#crm-batch-selector-1 thead th.crm-batch-name');
-        $("<th class = 'crm-batch-date'>Date</th>").insertAfter('#crm-batch-selector-1 thead th.crm-batch-name');
-	$('#crm-batch-selector-1 tbody tr').each(function(a, tr) {
+        $('table.dataTable thead th.crm-batch-company').remove();
+        $('table.dataTable thead th.crm-batch-date').remove();
+        $("<th class = 'crm-batch-company' >Company</th>").insertAfter('table.dataTable thead th.crm-batch-name');
+        $("<th class = 'crm-batch-date'>Date</th>").insertAfter('table.dataTable thead th.crm-batch-name');
+        $('table.dataTable tbody tr').each(function(a, tr) {
 	  $(tr).find('td.crm-batch-company').remove();
 	  $(tr).find('td.crm-batch-date').remove();
 	  var batchID = $(tr).attr('data-id');
