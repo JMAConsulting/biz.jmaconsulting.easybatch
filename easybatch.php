@@ -454,8 +454,13 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
     if (!empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields['payment_instrument_id'])) {
-        $errors['financial_batch_id'] = ts("Owner of selected payment method should match owner of Financial batch selected.");
+        $errors['financial_batch_id'] = ts("The Payment Method and Financial Batch should be associated with the same organization.");
       }
+    }
+  }
+  if ('CRM_Admin_Form_PaymentProcessor' == $formName) {
+    if (CRM_EasyBatch_BAO_EasyBatch::checkPaymentProcessorOwner($fields['financial_account_id'], $fields['payment_instrument_id'])) {
+      $errors['financial_account_id'] = ts("The Payment Method and Financial Account should be associated with the same organization.");
     }
   }
   if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {

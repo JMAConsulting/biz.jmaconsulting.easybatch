@@ -482,7 +482,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
     }
     if ($financialTypeOwnerID != $paymentMethodOwnerID) {
-      throw new CRM_Core_Exception(ts("Owner of Contribution Financial Type doesn't match with owner of selected Payment method."));
+      throw new CRM_Core_Exception(ts("The Payment Method/Payment Processor and Financial Type should be associated with the same organization."));
     }
   }
 
@@ -518,7 +518,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
     if ($dao->N > 1) {
-      throw new CRM_Core_Exception(ts("The selected Financial Type is configured with multiple Financial Account Owner."));
+      throw new CRM_Core_Exception(ts("The selected Financial Type's Financial Account should be associated with the same organization."));
     }
     $dao->fetch();
     return $dao->contact_id;
@@ -534,8 +534,20 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       GROUP BY cfa.contact_id";
     $dao = CRM_Core_DAO::executeQuery($sql);
     if ($dao->N > 1) {
-      throw new CRM_Core_Exception(ts("The Line item selected have financial type with different Financial Account owner."));
+      throw new CRM_Core_Exception(ts("The selected Line item(s) financial type should be associated with the same organization."));
     }
+  }
+
+  public static function checkPaymentProcessorOwner($financialAccountId, $paymentIntrumentId) {
+    $result = civicrm_api3('FinancialAccount', 'getsingle', array(
+      'return' => array("contact_id"),
+      'id' => $financialAccountId,
+    ));
+    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($paymentIntrumentId);
+    if ($result['contact_id'] == $paymentMethodOwnerID) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
 }
