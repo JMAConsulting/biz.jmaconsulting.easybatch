@@ -17,7 +17,7 @@ CRM.$(function($) {
     var getVar = str.split("eventId=");
     if (str.indexOf("civicrm/contact/view/participant") >= 0 && getVar[1] != undefined ) {
       $(".crm-event-eventfees-form-block-payment_instrument_id")
-        .before($('tr.crm-contribution-form-block-batch_id'));
+        .before($('.crm-contribution-form-block-batch_id').parent().html());
     }
   });
 });
