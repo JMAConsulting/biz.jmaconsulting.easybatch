@@ -457,12 +457,19 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
       $errors['financial_account_id'] = ts("The Payment Method and Financial Account should be associated with the same organization.");
     }
   }
-  if ($formName == "CRM_Financial_Form_FinancialBatch" && ($form->_action & CRM_Core_Action::UPDATE)) {
-    if ($form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
+  if ($formName == "CRM_Financial_Form_FinancialBatch") {
+    if (($form->_action & CRM_Core_Action::UPDATE) && $form->_defaultValues['org_id'] != CRM_Utils_Array::value('org_id', $fields)) {
       try {
         CRM_EasyBatch_BAO_EasyBatch::checkTransactions($form->getVar('_id'), $fields['org_id']);
       } catch (CRM_Core_Exception $e) {
         $errors['org_id'] = $e->getMessage();
+      }
+    }
+    if (!empty($fields['org_id']) && !empty($fields['payment_instrument_id'])) {
+      $paymentMethodOwnerID = CRM_EasyBatch_BAO_EasyBatch::getPaymentMethodOwnerID($fields['payment_instrument_id']);
+      if ($paymentMethodOwnerID != $fields['org_id']) {
+         $orgName = CRM_Contact_BAO_Contact::displayName($fields['org_id']);
+         $errors['payment_instrument_id'] = ts("The Payment Method should be associated with the '{$orgName}' organization.");
       }
     }
   }
