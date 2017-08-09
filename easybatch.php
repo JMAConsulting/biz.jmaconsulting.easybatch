@@ -318,9 +318,6 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     "CRM_Contribute_Form_AdditionalPayment",
     "CRM_Member_Form_MembershipRenewal",
   ))) {
-    if ($form->_mode) {
-      return FALSE;
-    }
     if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
       return FALSE;
     }
@@ -351,7 +348,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
       // Set default batch if only one is present.
       if (count($batches) == 1) {
-        $form->setDefaults(array('financial_batch_id' => reset($batches)));
+        $form->setDefaults(array('financial_batch_id' => key($batches)));
       }
       if ($form->getVar('_action') & CRM_Core_Action::UPDATE) {
         $batchId = CRM_EasyBatch_BAO_EasyBatch::getBatchIDForContribution($form->getVar('_id'));
