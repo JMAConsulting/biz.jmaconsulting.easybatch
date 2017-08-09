@@ -428,12 +428,17 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
   }
 
-  public static function checkBatchWithSameOrg($batchId, $paymentInstrumentId) {
-    if (empty($paymentInstrumentId)) {
+  public static function checkBatchWithSameOrg($batchId, $submitValues) {
+    if (empty($submitValues['payment_instrument_id']) && empty($submitValues['payment_processor_id'])) {
       return NULL;
     }
+    if (!empty($submitValues['payment_processor_id'])) {
+      $paymentMethodOwnerID = self::getPaymentProcessorOwnerID($submitValues['payment_processor_id']);
+    }
+    else {
+      $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
+    }
     $ownerID = CRM_Core_DAO::getFieldValue('CRM_EasyBatch_DAO_EasyBatchEntity', $batchId, 'contact_id', 'batch_id');
-    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($paymentInstrumentId);
     if ($paymentMethodOwnerID == $ownerID) {
       return FALSE;
     }
@@ -504,6 +509,9 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   }
 
   public static function getFinancialTypeOwnerID($financialTypeID) {
+    if (!$financialTypeID) {
+      return NULL;
+    }
     $sql = "SELECT cfa.contact_id FROM civicrm_entity_financial_account cefa
       INNER JOIN civicrm_financial_account cfa ON cefa.financial_account_id = cfa.id
         AND cefa.entity_table = 'civicrm_financial_type' AND cefa.entity_id = {$financialTypeID}
