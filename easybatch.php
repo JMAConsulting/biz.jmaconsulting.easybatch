@@ -412,6 +412,8 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     "CRM_Contribute_Form_AdditionalPayment",
     "CRM_Member_Form_MembershipRenewal",
     "CRM_Event_Form_ParticipantFeeSelection",
+    "CRM_Contribute_Form_ContributionPage_Amount",
+    "CRM_Event_Form_ManageEvent_Fee",
   ))) {
     if ($form->getVar('_action') & CRM_Core_Action::DELETE) {
       return FALSE;
@@ -426,8 +428,17 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
       return FALSE;
     }
     $fieldName = 'payment_instrument_id';
-    if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
+    if (in_array($formName, array('CRM_Event_Form_ParticipantFeeSelection', 'CRM_Contribute_Form_ContributionPage_Amount'))) {
       $fieldName = '_qf_default';
+    }
+    if ($formName == 'CRM_Contribute_Form_ContributionPage_Amount') {
+      $fields['financial_type_id'] = CRM_Utils_Array::value('financial_type_id', $form->getVar('_values'));
+      if (!empty($fields['payment_processor']) && isset($fields['payment_processor'])) {
+        $fields['payment_processor_id'] = array_keys($fields['payment_processor']);
+      }
+    }
+    elseif ($formName == 'CRM_Event_Form_ManageEvent_Fee' && !empty($fields['payment_processor'])) {
+      $fields['payment_processor_id'] = explode(',', $fields['payment_processor']);
     }
     if (in_array($formName, array(
       'CRM_Contribute_Form_AdditionalPayment',

@@ -447,40 +447,60 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
   public static function checkFTWithSameOrg($form, $submitValues) {
     $financialTypeID = CRM_Utils_Array::value('financial_type_id', $submitValues);
-    if (!empty($form->_priceSetId)) {
+    $formName = get_class($form);
+    $priceSetID = CRM_Utils_Array::value('price_set_id', $submitValues);
+    if ($priceSetID) {
+      $priceSet = current(CRM_Price_BAO_PriceSet::getSetDetail($priceSetID));
+    }
+    elseif (!empty($form->_priceSetId)) {
+      $priceSetID = $form->_priceSetId;
       $priceSet = $form->_priceSet;
+    }
+    if (!empty($priceSet)) {
       if (!$financialTypeID) {
         $financialTypeID = $priceSet['financial_type_id'];
       }
       $financialTypes[] = $financialTypeID;
       $lineItem = array();
-      if (empty($form->_lineItems)) {
-	CRM_Price_BAO_PriceSet::processAmount($priceSet['fields'],
-        $submitValues, $lineItem[$form->_priceSetId]);
-      }
-      foreach ($lineItem as $lines) {
-        foreach ($lines as $item) {
-	  if (!in_array($item['financial_type_id'], $financialTypes)) {
-            $financialTypes[] = $item['financial_type_id'];
+      if (in_array($formName, array('CRM_Contribute_Form_ContributionPage_Amount', 'CRM_Event_Form_ManageEvent_Fee'))) {
+        foreach ($priceSet['fields'] as $pfid => $pf) {
+          foreach ($pf['options'] as $pfv) {
+            $financialTypes[] = $pfv['financial_type_id'];
           }
-	}
+        }
+      }
+      elseif (empty($form->_lineItems)) {
+	       CRM_Price_BAO_PriceSet::processAmount($priceSet['fields'],
+         $submitValues, $lineItem[$priceSetID]);
+         foreach ($lineItem as $lines) {
+           foreach ($lines as $item) {
+             if (!in_array($item['financial_type_id'], $financialTypes)) {
+               $financialTypes[] = $item['financial_type_id'];
+             }
+           }
+         }
       }
       if (count($financialTypes) > 1) {
         self::checkRevenueAndDeferredOwner($financialTypes);
       }
     }
     $financialTypeOwnerID = self::getFinancialTypeOwnerID($financialTypeID);
-    if (empty($submitValues['payment_instrument_id']) && empty($submitValues['payment_processor_id'])) {
+    if (empty($submitValues['payment_instrument_id']) && empty($submitValues['payment_processor_id']) && empty($submitValues['payment_processor'])) {
       return NULL;
     }
-    if (!empty($submitValues['payment_processor_id'])) {
-      $paymentMethodOwnerID = self::getPaymentProcessorOwnerID($submitValues['payment_processor_id']);
+
+    foreach ((array) $submitValues['payment_processor_id'] as $processorID) {
+      $paymentMethodOwnerID = self::getPaymentProcessorOwnerID($processorID);
+      if ($financialTypeOwnerID != $paymentMethodOwnerID) {
+        throw new CRM_Core_Exception(ts("The Payment Method/Payment Processor and Financial Type should be associated with the same organization."));
+      }
     }
-    else {
+
+    if (!empty($submitValues['payment_instrument_id'])) {
       $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
-    }
-    if ($financialTypeOwnerID != $paymentMethodOwnerID) {
-      throw new CRM_Core_Exception(ts("The Payment Method/Payment Processor and Financial Type should be associated with the same organization."));
+      if ($financialTypeOwnerID != $paymentMethodOwnerID) {
+        throw new CRM_Core_Exception(ts("The Payment Method/Payment Processor and Financial Type should be associated with the same organization."));
+      }
     }
   }
 
