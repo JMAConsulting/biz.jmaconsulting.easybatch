@@ -425,10 +425,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     ) {
       return FALSE;
     }
-    $fieldName = 'payment_instrument_id';
-    if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
-      $fieldName = '_qf_default';
-    }
+    $fieldName = '_qf_default';
     if (in_array($formName, array(
       'CRM_Contribute_Form_AdditionalPayment',
       'CRM_Event_Form_ParticipantFeeSelection'))
@@ -449,6 +446,13 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     if (!empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields)) {
         $errors['financial_batch_id'] = ts("The Payment Method/Payment Processor and Financial Batch should be associated with the same organization.");
+      }
+    }
+    if (!empty($fields['payment_instrument_id']) && !empty($fields['credit_note_id'])) {
+      try {
+        CRM_EasyBatch_BAO_EasyBatch::checkCreditNote($fields['payment_instrument_id'], $fields['credit_note_id']);
+      } catch (CRM_Core_Exception $e) {
+        $errors[$fieldName] = $e->getMessage();
       }
     }
   }
