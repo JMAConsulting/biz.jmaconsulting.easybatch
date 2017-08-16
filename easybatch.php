@@ -664,6 +664,13 @@ function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
 
 function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = array()) {
   if ($objectName == 'Batch' && 'batch.selector.row' == $op) {
+    $instanceID = CRM_Report_Utils_Report::getInstanceIDForValue('biz.jmaconsulting.easybatch/batchdetail');
+    $url = CRM_Report_Utils_Report::getNextUrl(
+      'biz.jmaconsulting.easybatch/batchdetail',
+      'reset=1&force=1&id_op=eq&id_value=' . $objectId,
+      TRUE,
+      $instanceID
+    );
     $easyBatches = CRM_Core_Smarty::singleton()->get_template_vars('easyBatch');
     $company = CRM_Utils_Array::value('org_id', CRM_Utils_Array::value($objectId, $easyBatches));
     $date = CRM_Utils_Array::value('batch_date', CRM_Utils_Array::value($objectId, $easyBatches));
@@ -676,6 +683,11 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       'title' => '',
       'ref' => " rowBatchData-{$objectId}",
       'extra' => " style='Display:none;' company ='{$company}' batchDate = '{$date}'",
+    );
+    $links[] = array(
+      'name' => 'Batch Details Report',
+      'url' => $url,
+      'title' => 'Batch Details Report',
     );
     if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
       return FALSE;
