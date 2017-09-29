@@ -51,4 +51,6 @@ The batch will be created at the start of a new month containing the previous mo
 1. Navigate to Administer >> CiviContribute Component Settings
 1. Enable Require Financial Batch on payments through Backoffice forms?
 
+JMA Consulting develops and maintains this extension. 
+
 Many thanks to IIDA for sponsoring the development of this extension, and also to LCD Services for collaborating during its development.
