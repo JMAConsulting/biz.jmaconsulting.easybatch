@@ -1,6 +1,8 @@
 # Easy Batch
 
-### biz.jmaconsulting.easybatch
+#### biz.jmaconsulting.easybatch
+
+## Overview
 
 It's easier to create and export financial batches with Easy Batch:
 - Create automatic daily batches for front end transactions
