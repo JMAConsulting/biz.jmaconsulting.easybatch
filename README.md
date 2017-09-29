@@ -13,10 +13,10 @@ It's easier to create and export financial batches with Easy Batch:
 ## Installation
 
 1. If you have not already done so, setup Extensions Directory
-  1.a. Go to Administer >> System Settings >> Directories
-    1.a.i. Set an appropriate value for CiviCRM Extensions Directory. For example, for Drupal, [civicrm.files]/ext/
-    1. In a different window, ensure the directory exists and is readable by your web server process.
-  1. Click Save.
+    1. Go to Administer >> System Settings >> Directories
+        1. Set an appropriate value for CiviCRM Extensions Directory. For example, for Drupal, [civicrm.files]/ext/
+        1. In a different window, ensure the directory exists and is readable by your web server process.
+    1. Click Save.
 1. If you have not already done so, setup Extensions Resources URL
   1. Go to Administer >> System Settings >> Resource URLs
     1. Beside Extension Resource URL, enter an appropriate values such as [civicrm.files]/ext/
