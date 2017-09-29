@@ -23,7 +23,8 @@ It's easier to create and export financial batches with Easy Batch:
     1. Click Save.
 1. Install Easy Batch extension
     1. Go to Administer >> Customize Data and Screens >> Manage Extensions.
-    1. Click on Add New tabEasy Batch Emails in the list of extensions, download it and unzip it into the extensions direction setup above, then return to this page.
+    1. Click on Add New tab.
+    1. If Easy Batch is not in the list of extensions, manually download it and unzip it into the extensions direction setup above, then return to this page.
     1. Beside Easy Batch, click Download.
     1. Review the information, then click Download and Install.
 
@@ -51,6 +52,6 @@ The batch will be created at the start of a new month containing the previous mo
 1. Navigate to Administer >> CiviContribute Component Settings
 1. Enable Require Financial Batch on payments through Backoffice forms?
 
-JMA Consulting develops and maintains this extension. 
+JMA Consulting developed and maintains this extension. 
 
 Many thanks to IIDA for sponsoring the development of this extension, and also to LCD Services for collaborating during its development.
