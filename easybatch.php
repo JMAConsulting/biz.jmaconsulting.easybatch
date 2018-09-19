@@ -247,7 +247,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         'api' => array('extra' => array('email')),
       ), TRUE);
     }
-    $form->add('select', 'org_id', ts('Company'),
+    $form->add('select', 'org_id', ts('Organization'),
       CRM_Financial_BAO_FinancialAccount::getOrganizationNames(FALSE),
       FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
     );
@@ -274,7 +274,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Batch search form.
   if ($formName == 'CRM_Financial_Form_Search') {
-    $form->addEntityRef('org_id', ts('Company'), array(
+    $form->addEntityRef('org_id', ts('Organization'), array(
       'create' => FALSE,
       'api' => array(
         'params' => array('contact_type' => 'Organization'),
