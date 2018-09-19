@@ -256,7 +256,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
    * Create Auto Financial Batch
    */
   public static function createAutoNonPaymentFinancialBatch() {
-    $sql = "SELECT id, name, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
+    $sql = "SELECT FIRST(id) AS id, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
     $dao = CRM_Core_DAO::executeQuery($sql);
     $suffix = NULL;
     while ($dao->fetch()) {
