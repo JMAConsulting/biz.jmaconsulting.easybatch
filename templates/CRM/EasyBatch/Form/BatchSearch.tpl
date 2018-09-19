@@ -15,17 +15,17 @@
 	$('#batch_date_to').change();
       });
       $(document).ajaxSuccess(function(event, xhr, settings) {
-        $('table.dataTable thead th.crm-batch-company').remove();
+        $('table.dataTable thead th.crm-batch-org').remove();
         $('table.dataTable thead th.crm-batch-date').remove();
-        $("<th class = 'crm-batch-company' >Company</th>").insertAfter('table.dataTable thead th.crm-batch-name');
+        $("<th class = 'crm-batch-org' >Organization</th>").insertAfter('table.dataTable thead th.crm-batch-name');
         $("<th class = 'crm-batch-date'>Date</th>").insertAfter('table.dataTable thead th.crm-batch-name');
         $('table.dataTable tbody tr').each(function(a, tr) {
-	  $(tr).find('td.crm-batch-company').remove();
+	  $(tr).find('td.crm-batch-org').remove();
 	  $(tr).find('td.crm-batch-date').remove();
 	  var batchID = $(tr).attr('data-id');
-	  var company = $('a.rowbatchdata-' + batchID).attr('company');
+	  var org = $('a.rowbatchdata-' + batchID).attr('org');
 	  var batchdate = $('a.rowbatchdata-' + batchID).attr('batchdate');
-          $("<td class = 'crm-batch-company' >" + company + "</td>")
+          $("<td class = 'crm-batch-org' >" + org + "</td>")
             .insertAfter($(tr).find('td.crm-batch-name'));
           $("<td class = 'crm-batch-date'>" + batchdate + "</td>")
             .insertAfter($(tr).find('td.crm-batch-name'));
