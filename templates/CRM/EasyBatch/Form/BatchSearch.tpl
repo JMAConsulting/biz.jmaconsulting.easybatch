@@ -23,9 +23,9 @@
 	  $(tr).find('td.crm-batch-org').remove();
 	  $(tr).find('td.crm-batch-date').remove();
 	  var batchID = $(tr).attr('data-id');
-	  var org = $('a.rowbatchdata-' + batchID).attr('org');
+	  var org_id = $('a.rowbatchdata-' + batchID).attr('org_id');
 	  var batchdate = $('a.rowbatchdata-' + batchID).attr('batchdate');
-          $("<td class = 'crm-batch-org' >" + org + "</td>")
+          $("<td class = 'crm-batch-org' >" + org_id + "</td>")
             .insertAfter($(tr).find('td.crm-batch-name'));
           $("<td class = 'crm-batch-date'>" + batchdate + "</td>")
             .insertAfter($(tr).find('td.crm-batch-name'));
