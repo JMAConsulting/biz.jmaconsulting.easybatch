@@ -247,7 +247,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         'api' => array('extra' => array('email')),
       ), TRUE);
     }
-    $form->add('select', 'org_id', ts('Company'),
+    $form->add('select', 'org_id', ts('Organization'),
       CRM_Financial_BAO_FinancialAccount::getOrganizationNames(FALSE),
       FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
     );
@@ -274,7 +274,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
 
   // Batch search form.
   if ($formName == 'CRM_Financial_Form_Search') {
-    $form->addEntityRef('org_id', ts('Company'), array(
+    $form->addEntityRef('org_id', ts('Organization'), array(
       'create' => FALSE,
       'api' => array(
         'params' => array('contact_type' => 'Organization'),
@@ -440,6 +440,7 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     elseif ($formName == 'CRM_Event_Form_ManageEvent_Fee' && !empty($fields['payment_processor'])) {
       $fields['payment_processor_id'] = explode(',', $fields['payment_processor']);
     }
+
     if (in_array($formName, array(
       'CRM_Contribute_Form_AdditionalPayment',
       'CRM_Event_Form_ParticipantFeeSelection'))
@@ -460,6 +461,13 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     if (!empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields)) {
         $errors['financial_batch_id'] = ts("The Payment Method/Payment Processor and Financial Batch should be associated with the same organization.");
+      }
+    }
+    if (!empty($fields['payment_instrument_id']) && !empty($fields['credit_note_id'])) {
+      try {
+        CRM_EasyBatch_BAO_EasyBatch::checkCreditNote($fields['payment_instrument_id'], $fields['credit_note_id']);
+      } catch (CRM_Core_Exception $e) {
+        $errors[$fieldName] = $e->getMessage();
       }
     }
   }
@@ -671,6 +679,13 @@ function easybatch_civicrm_apiWrappers(&$wrappers, $apiRequest) {;
 
 function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask = NULL, &$values = array()) {
   if ($objectName == 'Batch' && 'batch.selector.row' == $op) {
+    $instanceID = CRM_Report_Utils_Report::getInstanceIDForValue('biz.jmaconsulting.easybatch/batchdetail');
+    $url = CRM_Report_Utils_Report::getNextUrl(
+      'biz.jmaconsulting.easybatch/batchdetail',
+      'reset=1&force=1&id_op=eq&id_value=' . $objectId,
+      TRUE,
+      $instanceID
+    );
     $easyBatches = CRM_Core_Smarty::singleton()->get_template_vars('easyBatch');
     $company = CRM_Utils_Array::value('org_id', CRM_Utils_Array::value($objectId, $easyBatches));
     $date = CRM_Utils_Array::value('batch_date', CRM_Utils_Array::value($objectId, $easyBatches));
@@ -683,6 +698,11 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       'title' => '',
       'ref' => " rowBatchData-{$objectId}",
       'extra' => " style='Display:none;' company ='{$company}' batchDate = '{$date}'",
+    );
+    $links[] = array(
+      'name' => 'Batch Details Report',
+      'url' => $url,
+      'title' => 'Batch Details Report',
     );
     if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
       return FALSE;

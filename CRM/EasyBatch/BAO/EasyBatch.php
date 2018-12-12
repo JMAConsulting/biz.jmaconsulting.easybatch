@@ -256,7 +256,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
    * Create Auto Financial Batch
    */
   public static function createAutoNonPaymentFinancialBatch() {
-    $sql = "SELECT id, name, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
+    $sql = "SELECT MIN(id) AS id, contact_id FROM civicrm_financial_account WHERE is_active = 1 GROUP BY contact_id";
     $dao = CRM_Core_DAO::executeQuery($sql);
     $suffix = NULL;
     while ($dao->fetch()) {
@@ -569,6 +569,24 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       return FALSE;
     }
     return TRUE;
+  }
+
+  public static function checkCreditNote($paymentIntrumentId, $creditNotes) {
+    $query = "SELECT cfa.contact_id FROM civicrm_contribution cc
+       INNER JOIN civicrm_entity_financial_account cefa ON cefa.entity_id = cc.financial_type_id
+         AND cefa.entity_table = 'civicrm_financial_type'
+       INNER JOIN civicrm_financial_account cfa ON cfa.id = cefa.financial_account_id
+      WHERE cc.id IN (" . implode(',', $creditNotes) . ") GROUP BY cfa.contact_id
+    ";
+    $result = CRM_Core_DAO::executeQuery($query);
+    if ($result->N > 1) {
+      throw new CRM_Core_Exception(ts("The selected Credit Note(s) should be associated with the same organization."));
+    }
+    $result->fetch();
+    $paymentMethodOwnerID = self::getPaymentMethodOwnerID($paymentIntrumentId);
+    if ($result->contact_id != $paymentMethodOwnerID) {
+      throw new CRM_Core_Exception(ts("The selected Credit Note(s) should be associated with the same organization."));
+    }
   }
 
 }
