@@ -13,10 +13,13 @@ CRM.$(function($) {
   })
   var batchLabelHtml = $('#batchLabel').html();
   var batchContentHtml = $('#batchContent').html();
+
   // Contribution.
-  $(".crm-contribution-form-block-receive_date, .crm-payment-form-block-trxn_date, .crm-membership-form-block-receive_date, .crm-membershiprenew-form-block-receive_date")
-    .after($('tr.crm-contribution-form-block-batch_id'));
+  $("#receiptDate, .crm-payment-form-block-trxn_date, .crm-membership-form-block-receive_date, .crm-membershiprenew-form-block-receive_date").after($('tr.crm-contribution-form-block-batch_id'));
+
+  // Membership
   $(".crm-member-membership-form-block-financial_type_id, .crm-member-membershiprenew-form-block-financial_type_id, .crm-participant-form-block-payment_processor_id, .crm-payment-form-block-payment_processor_id").before($('tr.crm-contribution-form-block-batch_id'));
+
   // Event.
   $( document ).ajaxComplete(function(event, xhr, settings) {
     var str = settings.url;
