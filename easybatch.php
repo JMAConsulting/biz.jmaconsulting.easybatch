@@ -259,6 +259,11 @@ function easybatch_civicrm_buildForm($formName, &$form) {
     $batchId = $form->getVar('_id');
     if (!$batchId) {
       $defaults = array('created_id' => CRM_Core_Session::singleton()->get('userID'));
+      // Default org ID.
+      $orgId = CRM_Core_DAO::singleValueQuery("SELECT contact_id FROM civicrm_financial_account WHERE is_active = 1 ORDER by id LIMIT 1");
+      if ($orgId) {
+        $defaults['org_id'] = $orgId;
+      }
     }
     else {
       $values = CRM_EasyBatch_BAO_EasyBatch::retrieve(array('batch_id' => $batchId));

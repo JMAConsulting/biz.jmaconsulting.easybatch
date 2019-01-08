@@ -439,7 +439,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       $paymentMethodOwnerID = self::getPaymentMethodOwnerID($submitValues['payment_instrument_id']);
     }
     $ownerID = CRM_Core_DAO::getFieldValue('CRM_EasyBatch_DAO_EasyBatchEntity', $batchId, 'contact_id', 'batch_id');
-    if ($paymentMethodOwnerID == $ownerID) {
+    if (!empty($ownerID) && $paymentMethodOwnerID == $ownerID) {
       return FALSE;
     }
     return TRUE;
