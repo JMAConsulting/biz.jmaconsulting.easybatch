@@ -132,65 +132,6 @@ function easybatch_civicrm_preProcess($formName, &$form) {
 }
 
 /**
- * Implements hook_civicrm_alterSettingsMetaData().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsMetaData
- *
- */
-function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, $profile) {
-  $settingsMetadata['display_financial_batch'] = array(
-    'group_name' => 'Contribute Preferences',
-    'group' => 'contribute',
-    'name' => 'display_financial_batch',
-    'type' => 'Integer',
-    'html_type' => 'checkbox',
-    'quick_form_type' => 'Element',
-    'default' => 0,
-    'add' => '4.7',
-    'title' => 'Display Financial Batch on payments through Backoffice forms?',
-    'is_domain' => 1,
-    'is_contact' => 0,
-    'description' => '',
-    'help_text' => '',
-  );
-  $settingsMetadata['require_financial_batch'] = array(
-    'group_name' => 'Contribute Preferences',
-    'group' => 'contribute',
-    'name' => 'require_financial_batch',
-    'type' => 'Integer',
-    'html_type' => 'checkbox',
-    'quick_form_type' => 'Element',
-    'default' => 0,
-    'add' => '4.7',
-    'title' => 'Require Financial Batch on payments through Backoffice forms?',
-    'is_domain' => 1,
-    'is_contact' => 0,
-    'description' => '',
-    'help_text' => '',
-  );
-  $settingsMetadata['auto_batch_non_payment_trxns'] = array(
-    'group_name' => 'Contribute Preferences',
-    'group' => 'contribute',
-    'name' => 'auto_batch_non_payment_trxns',
-    'type' => 'Integer',
-    'html_type' => 'select',
-    'quick_form_type' => 'Element',
-    'default' => 0,
-    'option_values' => array(
-      0 => ts('No'),
-      'IIF' => ts('Into .iif file'),
-      'CSV' => ts('Into .csv file'),
-    ),
-    'add' => '4.7',
-    'title' => 'Automatically batch non-payment transactions?',
-    'is_domain' => 1,
-    'is_contact' => 0,
-    'description' => '',
-    'help_text' => '',
-  );
-}
-
-/**
  * Implements hook_civicrm_buildForm().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_buildForm
