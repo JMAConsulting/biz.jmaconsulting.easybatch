@@ -205,6 +205,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       if ($orgId) {
         $defaults['org_id'] = $orgId;
       }
+      list($defaults['batch_date'], $defaults['batch_date_time']) = CRM_Utils_Date::setDateDefaults(date('Ymd'), 'activityDate');
     }
     else {
       $values = CRM_EasyBatch_BAO_EasyBatch::retrieve(array('batch_id' => $batchId));
