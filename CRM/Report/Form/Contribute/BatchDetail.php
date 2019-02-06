@@ -37,12 +37,13 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
   /**
    */
   public function __construct() {
+    $batchNames = self::getBatches();
     $this->_columns = array(
       'civicrm_batch' => array(
         'dao' => 'CRM_Batch_DAO_Batch',
         'fields' => array(
           'batch_id' => array(
-	    'name' => 'id',
+	          'name' => 'id',
             'title' => ts('Batch ID'),
           ),
           'title' => array(
@@ -51,11 +52,18 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         ),
         'filters' => array(
           'id' => array(
-            'title' => ts('Batch ID'),
-            'no_display' => TRUE,
+            'title' => ts('Batch Name'),
+            'type' => CRM_Utils_Type::T_INT,
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => $batchNames,
+          ),
+          'payment_instrument_id' => array(
+            'title' => ts('Payment Method'),
+            'operatorType' => CRM_Report_Form::OP_MULTISELECT,
+            'options' => CRM_Contribute_PseudoConstant::paymentInstrument(),
             'type' => CRM_Utils_Type::T_INT,
           ),
-	),
+	     ),
       ),
       'civicrm_easybatch_entity' => array(
         'dao' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
@@ -64,7 +72,11 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
             'title' => ts('Batch Date'),
           ),
         ),
-        'filters' => array(),
+        'filters' => array(
+          'batch_date' => array(
+            'operatorType' => CRM_Report_Form::OP_DATE
+          ),
+        ),
       ),
       'civicrm_financial_trxn' => array(
         'dao' => 'CRM_Financial_DAO_FinancialTrxn',
@@ -80,6 +92,12 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'payment_instrument_id' => array(
             'title' => ts('Payment Method'),
             'required' => TRUE,
+          ),
+          'pan_truncation' => array(
+            'title' => ts('Last 4 digits of card'),
+          ),
+          'card_type_id' => array(
+            'title' => ts('Card Type'),
           ),
         ),
         'filters' => array(),
@@ -145,6 +163,19 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
     parent::__construct();
   }
 
+  public static function getBatches() {
+    $query = "SELECT id, title
+      FROM civicrm_batch
+      ORDER BY title";
+
+    $batches = array();
+    $dao = CRM_Core_DAO::executeQuery($query);
+    while ($dao->fetch()) {
+      $batches[$dao->id] = $dao->title;
+    }
+    return $batches;
+  }
+
   public function preProcess() {
     parent::preProcess();
   }
@@ -181,6 +212,15 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
    */
   public function postProcess() {
     parent::postProcess();
+  }
+
+  public function alterDisplay(&$rows) {
+    foreach ($rows as $rowNum => $row) {
+      if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
+        $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
+        $entryFound = TRUE;
+      }
+    }
   }
 
 }
