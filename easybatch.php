@@ -108,6 +108,60 @@ function easybatch_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 /**
+ * Implements hook_civicrm_alterSettingsMetaData().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_alterSettingsMetaData
+ *
+ */
+function easybatch_civicrm_alterSettingsMetaData(&$settingsMetadata, $domainID, $profile) {
+  $settingsMetadata['display_financial_batch'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'display_financial_batch',
+    'type' => 'Boolean',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Display Financial Batch',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['require_financial_batch'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'require_financial_batch',
+    'type' => 'Boolean',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Require Financial Batch',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+  $settingsMetadata['auto_batch_non_payment_trxns'] = array(
+    'group_name' => 'Contribute Preferences',
+    'group' => 'contribute',
+    'name' => 'auto_batch_non_payment_trxns',
+    'type' => 'Boolean',
+    'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
+    'default' => 0,
+    'add' => '4.7',
+    'title' => 'Auto Batch Non Payment Transactions?',
+    'is_domain' => 1,
+    'is_contact' => 0,
+    'description' => '',
+    'help_text' => '',
+  );
+}
+
+/**
  * Implements hook_civicrm_preProcess().
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess

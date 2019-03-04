@@ -17,10 +17,10 @@
 {literal}
 <script type="text/javascript">
 CRM.$(function($) {
-  $($('span.help-icon-auto_batch_non_payment_trxns a'))
-    .insertAfter('.crm-preferences-form-block-auto_batch_non_payment_trxns td.label label');
   $($('table.non-payment-batches tr'))
-    .insertAfter('.crm-preferences-form-block-auto_batch_non_payment_trxns');
+    .insertAfter('.crm--form-block-auto_batch_non_payment_trxns');
+  $($('span.help-icon-auto_batch_non_payment_trxns a'))
+    .insertAfter('.crm--form-block-auto_batch_non_payment_trxns td label');
 });
 </script>
 {/literal}
