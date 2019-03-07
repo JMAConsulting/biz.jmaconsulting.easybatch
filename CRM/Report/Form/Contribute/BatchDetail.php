@@ -74,7 +74,9 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         ),
         'filters' => array(
           'batch_date' => array(
-            'operatorType' => CRM_Report_Form::OP_DATE
+            'title' => ts('Batch Date'),
+            'operatorType' => CRM_Report_Form::OP_DATE,
+            'type' => CRM_Utils_Type::T_DATE,
           ),
         ),
       ),
@@ -82,7 +84,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         'dao' => 'CRM_Financial_DAO_FinancialTrxn',
         'fields' => array(
           'payment_id' => array(
-	    'name' => 'id',
+	          'name' => 'id',
             'title' => ts('Payment ID'),
             'required' => TRUE,
           ),
@@ -106,11 +108,11 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         'dao' => 'CRM_Contribute_DAO_Contribution',
         'fields' => array(
           'contribution_id' => array(
-	    'name' => 'id',
+	          'name' => 'id',
             'title' => ts('Contribution ID'),
             'required' => TRUE,
           ),
-	  'contact_name' => array(
+	          'contact_name' => array(
             'title' => ts('Contact Name'),
             'dbAlias' => 'cc.sort_name',
           ),
@@ -127,11 +129,11 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         'dao' => 'CRM_Financial_DAO_FinancialAccount',
         'fields' => array(
           'payment_method_account_name' => array(
-	    'name' => 'name',
+            'name' => 'name',
             'title' => ts('Payment Method Financial Account Name'),
           ),
           'payment_method_account_code' => array(
-	    'name' => 'accounting_code',
+	          'name' => 'accounting_code',
             'title' => ts('Payment Method Account Accounting Code'),
           ),
         ),
@@ -152,7 +154,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
             'dbAlias' => 'cfa.accounting_code',
           ),
           'item_amount' => array(
-	    'name' => 'amount',
+	          'name' => 'amount',
             'title' => ts('Item Amount'),
             'required' => TRUE,
           ),
@@ -207,6 +209,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           ON cfa.id = {$this->_aliases['civicrm_financial_item']}.financial_account_id
     ";
   }
+
   /**
    * Post process function.
    */
@@ -215,9 +218,14 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
   }
 
   public function alterDisplay(&$rows) {
+    $paymentMethod = CRM_Contribute_PseudoConstant::paymentInstrument();
     foreach ($rows as $rowNum => $row) {
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
         $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
+        $entryFound = TRUE;
+      }
+      if (!empty($row['civicrm_financial_trxn_payment_instrument_id'])) {
+        $rows[$rowNum]['civicrm_financial_trxn_payment_instrument_id'] = $paymentMethod[$row['civicrm_financial_trxn_payment_instrument_id']];
         $entryFound = TRUE;
       }
     }
