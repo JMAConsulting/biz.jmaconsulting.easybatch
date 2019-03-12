@@ -45,6 +45,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'batch_id' => array(
 	          'name' => 'id',
             'title' => ts('Batch ID'),
+            'default' => TRUE,
           ),
           'title' => array(
             'title' => ts('Batch Name'),
@@ -90,6 +91,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           ),
           'trxn_date' => array(
             'title' => ts('Transaction Date'),
+            'default' => TRUE,
           ),
           'total_amount' => array(
 	          'title' => ts('Debit Account Amount (Unsplit)'),
@@ -106,6 +108,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           ),
           'check_number' => array(
 	          'title' => ts('Check Number'),
+	          'default' => TRUE,
 	        ),
           'currency' => array(
   	        'title' => ts('Currency'),
@@ -131,7 +134,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'contribution_id' => array(
 	          'name' => 'id',
             'title' => ts('Contribution ID'),
-            'required' => TRUE,
+            'default' => TRUE,
           ),
 	        'contact_id' => array(
             'name' => 'contact_id',
@@ -148,6 +151,11 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'source' => array(
             'title' => ts('Source'),
             'default' => TRUE,
+          ),
+          'invoice_id' => array(
+            'title' => ts('Invoice Number'),
+            'default' => TRUE,
+            'required' => TRUE,
           ),
         ),
         'filters' => array(),
@@ -237,7 +245,6 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'item_amount' => array(
 	          'name' => 'amount',
             'title' => ts('Item Amount'),
-            'required' => TRUE,
           ),
         ),
         'filters' => array(),
@@ -325,6 +332,32 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         }
       }
     }
+    // Rearrange select clause
+    $order = [
+      'civicrm_batch_batch_id',
+      'civicrm_contribution_invoice_id',
+      'civicrm_contribution_contact_id',
+      'civicrm_financial_trxn_payment_id',
+      'civicrm_financial_trxn_trxn_date',
+      'civicrm_financial_account_debit_accounting_code',
+      'civicrm_financial_account_debit_name',
+      'civicrm_financial_account_debit_account_type_code',
+      'civicrm_financial_trxn_total_amount',
+      'civicrm_financial_trxn_trxn_id',
+      'civicrm_entity_financial_trxn_debit_amount',
+      'civicrm_financial_trxn_payment_instrument_id',
+      'civicrm_financial_trxn_check_number',
+      'civicrm_contribution_source',
+      'civicrm_financial_trxn_currency',
+      'civicrm_financial_trxn_status_id',
+      'civicrm_entity_financial_trxn_amount',
+      'civicrm_financial_account_credit_accounting_code',
+      'civicrm_financial_account_credit_name',
+      'civicrm_financial_account_credit_account_type_code',
+      'civicrm_financial_item_description',
+    ];
+    $this->_columnHeaders = array_replace(array_flip($order), $this->_columnHeaders);
+    unset($this->_columnHeaders['civicrm_contribution_contribution_id']);
     $this->_selectClauses = $select;
 
     $this->_select = 'SELECT ' . implode(', ', $select) . ' ';
@@ -374,7 +407,12 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
   }
 
   public function alterDisplay(&$rows) {
+    $prefixValue = Civi::settings()->get('contribution_invoice_settings');
     foreach ($rows as $rowNum => $row) {
+      if (array_key_exists('civicrm_contribution_contribution_id', $row)) {
+        $rows[$rowNum]['civicrm_contribution_invoice_id'] = CRM_Utils_Array::value('invoice_prefix', $prefixValue) . "" . $row['civicrm_contribution_contribution_id'];
+        $entryFound = TRUE;
+      }
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
         $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
         $entryFound = TRUE;
