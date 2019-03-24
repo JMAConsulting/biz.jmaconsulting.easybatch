@@ -8,7 +8,7 @@
      <td class='label'>{$form.batch_close_time.label}</td>
      <td class='content'>{$form.batch_close_time.html}{include file="CRM/common/jcalendar.tpl" elementName=batch_close_time}</td>
   </tr>
-  {if $batches}
+  {if $batches and !$isHideBatch}
   <tr class="crm-paymentProcessor-form-block-non_payment_transactions_batch">
     <td class='label'><label>{ts}Current non-payment transactions batch{/ts}</label></td>
     <td>
@@ -43,11 +43,11 @@ CRM.$(function($) {
   function showHideElement() {
     if ($('#auto_financial_batch').prop('checked')) {
       $("tr.crm-paymentProcessor-form-block-batch_close_time").show();
-      $("tr.crm-paymentProcessor-form-block-non_payment_transactions_batch").show();
+      $("tr.crm-paymentProcessor-form-block-non_payment_transactions_batch").hide();
     }
     else {
       $("tr.crm-paymentProcessor-form-block-batch_close_time").hide();
-      $("tr.crm-paymentProcessor-form-block-non_payment_transactions_batch").hide();
+      $("tr.crm-paymentProcessor-form-block-non_payment_transactions_batch").show();
     }
   }
 });
