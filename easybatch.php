@@ -476,10 +476,21 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     if ($formName == 'CRM_Event_Form_ParticipantFeeSelection') {
       return NULL;
     }
-    if (Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
+    $financialEasyBatchId = FALSE;
+    // Backoffice forms.
+    if (in_array($formName, array(
+      "CRM_Contribute_Form_Contribution",
+      "CRM_Member_Form_Membership",
+      "CRM_Event_Form_Participant",
+      "CRM_Contribute_Form_AdditionalPayment",
+      "CRM_Member_Form_MembershipRenewal",
+    ))) {
+      $financialEasyBatchId = TRUE;
+    }
+    if ($financialEasyBatchId && Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
     }
-    if (!empty($fields['financial_batch_id'])) {
+    if ($financialEasyBatchId && !empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields)) {
         $errors['financial_batch_id'] = ts("The Payment Method/Payment Processor and Financial Batch should be associated with the same organization.");
       }
