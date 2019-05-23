@@ -165,7 +165,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       if ($financialTrxn->payment_processor_id
         && Civi::settings()->get("pp_auto_financial_batch_{$financialTrxn->payment_processor_id}")
       ) {
-        $findCardType = (bool) Civi::settings()->get("pp_cc_financial_batch_{$financialTrxn->payment_processor_id");
+        $findCardType = (bool) Civi::settings()->get("pp_cc_financial_batch_{$financialTrxn->payment_processor_id}");
         $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id);
         $financialEasyBatchId = key($batches);
       }
