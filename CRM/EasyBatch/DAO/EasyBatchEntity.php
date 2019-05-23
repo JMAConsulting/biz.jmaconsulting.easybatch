@@ -85,6 +85,11 @@ class CRM_EasyBatch_DAO_EasyBatchEntity extends CRM_Core_DAO {
    */
   public $batch_date;
   /**
+   *
+   * @var int unsigned
+   */
+  public $card_type_id;
+  /**
    * Class constructor.
    */
   function __construct() {
@@ -176,6 +181,15 @@ class CRM_EasyBatch_DAO_EasyBatchEntity extends CRM_Core_DAO {
           'html' => array(
             'type' => 'Select Date',
           ) ,
+        ) ,
+        'card_type_id' => array(
+          'name' => 'card_type_id',
+          'type' => CRM_Utils_Type::T_INT,
+          'description' => 'card type id',
+          'table_name' => 'civicrm_easybatch_entity',
+          'entity' => 'EasyBatchEntity',
+          'bao' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
+          'localizable' => 0,
         ) ,
       );
       CRM_Core_DAO_AllCoreTables::invoke(__CLASS__, 'fields_callback', Civi::$statics[__CLASS__]['fields']);
