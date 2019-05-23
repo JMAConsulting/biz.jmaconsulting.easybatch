@@ -127,8 +127,8 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   /**
    * Add financial transaction entry to batch.
    */
-  public static function addTransactionsToBatch($batchId, $financialTrxnId) {
-    if (self::checkIfFTAlreadyAddedToBatch($financialTrxnId)) {
+  public static function addTransactionsToBatch($batchId, $financialTrxnId, $findCardType = FALSE) {
+    if (self::checkIfFTAlreadyAddedToBatch($financialTrxnId) || ($findCardType && !self::checkIfCardTypePresent($batchId, $financialTrxnId))) {
       return FALSE;
     }
     $tx = new CRM_Core_Transaction();
@@ -149,15 +149,23 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
   }
 
+  public static function checkIfCardTypePresent($batchId, $financialTrxnId) {
+    $cardTypeID = CRM_Core_DAO::getFieldValue('CRM_Financial_DAO_FinancialTrxn', $financialTrxnId, 'card_type_id');
+    $expectedCardTypeID = CRM_Core_DAO::singleValueQuery("SELECT card_type_id FROM civicrm_easybatch_entity WHERE batch_id = $batchId LIMIT 1");
+    return ($cardTypeID == $expectedCardTypeID);
+  }
+
   /**
    * Process Auto financial batch.
    */
   public static function addTransactionsToAutoBatch($financialTrxn) {
     $financialEasyBatchId = NULL;
+    $findCardType = FALSE;
     if ($financialTrxn->is_payment) {
       if ($financialTrxn->payment_processor_id
         && Civi::settings()->get("pp_auto_financial_batch_{$financialTrxn->payment_processor_id}")
       ) {
+        $findCardType = (bool) Civi::settings()->get("pp_cc_financial_batch_{$financialTrxn->payment_processor_id");
         $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id);
         $financialEasyBatchId = key($batches);
       }
@@ -177,7 +185,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
 
     if ($financialEasyBatchId) {
-      self::addTransactionsToBatch($financialEasyBatchId, $financialTrxn->id);
+      self::addTransactionsToBatch($financialEasyBatchId, $financialTrxn->id, $findCardType);
     }
 
   }
@@ -203,7 +211,8 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   public static function createAutoFinancialBatch(
     $financialAccountId,
     $suffixName = NULL,
-    $paymentProcessorID = NULL
+    $paymentProcessorID = NULL,
+    $cardTypeID = NULL
   ) {
     $contactId = civicrm_api3('FinancialAccount', 'getSingle', array(
       'return' => array("contact_id"),
@@ -248,6 +257,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       'is_automatic' => TRUE,
       'batch_date' => $batchDate,
       'payment_processor_id' => $paymentProcessorID,
+      'card_type_id' => $cardTypeID,
     );
     self::create($entityBatchParams);
   }
@@ -272,7 +282,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
    */
   public static function processAutomaticBatches() {
     $openStatusID = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
-    $sql = "SELECT e.batch_id, e.payment_processor_id, e.contact_id, p.name
+    $sql = "SELECT e.batch_id, e.payment_processor_id, e.contact_id, p.name, p.accepted_credit_cards
       FROM civicrm_easybatch_entity e
         INNER JOIN civicrm_batch b ON b.id = e.batch_id
         LEFT JOIN civicrm_payment_processor p ON p.id = e.payment_processor_id
@@ -328,11 +338,21 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
             NULL,
             'civicrm_payment_processor'
           );
-          CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch(
-            $financialAccountId,
-            $dao->name,
-            $dao->payment_processor_id
-          );
+          $cardTypes = Civi::settings()->get("pp_cc_financial_batch_{$dao->payment_processor_id}") ? json_decode($dao->accepted_credit_cards) : [''];
+          $types = [
+            'Visa' => 1,
+            'MasterCard' => 2,
+            'Amex' => 3,
+            'Discover' => 4,
+          ];
+          foreach ($cardTypes as $cardType) {
+            CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch(
+              $financialAccountId,
+              $dao->name . $cardType,
+              $dao->payment_processor_id,
+              CRM_Utils_Array::value($cardType, $types)
+            );
+          }
           Civi::settings()->set("pp_last_job_run_{$dao->payment_processor_id}", date('Ymd'));
         }
       }
