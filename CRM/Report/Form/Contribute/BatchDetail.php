@@ -422,7 +422,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
       if (array_key_exists('civicrm_batch_batch_id', $row)) {
         $value = $row['civicrm_batch_batch_id'];
         $url = CRM_Utils_System::url("civicrm/report/contribute/bookkeeping?", 'force=1&batch_id_value=' . $value);
-        $rows[$rowNum]['civicrm_batch_batch_id'] = "<a class=\"crm-popup\" href=\"$url\">$value</a>";
+        $rows[$rowNum]['civicrm_batch_batch_id'] = "<a target='_blank' href=\"$url\">$value</a>";
         $rows[$rowNum]['civicrm_batch_batch_id_hover'] = ts('View Details of Batch transactions.');
       }
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
