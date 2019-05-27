@@ -50,6 +50,9 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'title' => array(
             'title' => ts('Batch Name'),
           ),
+          'total' => array(
+            'title' => ts('Batch Total'),
+          ),
         ),
         'filters' => array(
           'id' => array(
