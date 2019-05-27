@@ -348,7 +348,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
           foreach ($cardTypes as $cardType) {
             CRM_EasyBatch_BAO_EasyBatch::createAutoFinancialBatch(
               $financialAccountId,
-              $dao->name . $cardType,
+              sprintf(' %s %s ', $dao->name, $cardType),
               $dao->payment_processor_id,
               CRM_Utils_Array::value($cardType, $types)
             );

@@ -72,6 +72,10 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           'batch_date' => array(
             'title' => ts('Batch Date'),
           ),
+          'payment_processor_id' => array(
+            'title' => ts('Batch payment processor'),
+            'dbAlias' => 'pp.name',
+          ),
         ),
         'filters' => array(
           'batch_date' => array(
@@ -396,6 +400,8 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
           ON {$this->_aliases['civicrm_financial_item']}.financial_account_id = {$this->_aliases['civicrm_financial_account']}_credit_2.id
         LEFT JOIN civicrm_financial_account cfa
           ON cfa.id = {$this->_aliases['civicrm_financial_item']}.financial_account_id
+        LEFT JOIN civicrm_payment_processor pp
+          ON pp.id = {$this->_aliases['civicrm_easybatch_entity']}.payment_processor_id
     ";
   }
 
@@ -412,6 +418,12 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
       if (array_key_exists('civicrm_contribution_contribution_id', $row)) {
         $rows[$rowNum]['civicrm_contribution_invoice_id'] = CRM_Utils_Array::value('invoice_prefix', $prefixValue) . "" . $row['civicrm_contribution_contribution_id'];
         $entryFound = TRUE;
+      }
+      if (array_key_exists('civicrm_batch_batch_id', $row)) {
+        $value = $row['civicrm_batch_batch_id'];
+        $url = CRM_Utils_System::url("civicrm/report/contribute/bookkeeping?", 'force=1&batch_id_value=' . $value);
+        $rows[$rowNum]['civicrm_batch_batch_id'] = "<a class=\"crm-popup\" href=\"$url\">$value</a>";
+        $rows[$rowNum]['civicrm_batch_batch_id_hover'] = ts('View Details of Batch transactions.');
       }
       if (!empty($row['civicrm_financial_trxn_card_type_id'])) {
         $rows[$rowNum]['civicrm_financial_trxn_card_type_id'] = $this->getLabels($row['civicrm_financial_trxn_card_type_id'], 'CRM_Financial_DAO_FinancialTrxn', 'card_type_id');
