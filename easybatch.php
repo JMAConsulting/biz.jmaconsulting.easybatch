@@ -333,7 +333,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       $isRequired = FALSE;
       if (Civi::settings()->get('require_financial_batch')
         && in_array($formName, array(
-          "CRM_Contribute_Form_Contribution",
+          //"CRM_Contribute_Form_Contribution",
           "CRM_Contribute_Form_AdditionalPayment"
         ))
       ) {
@@ -491,6 +491,9 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
     if ($financialEasyBatchId && Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
+    }
+    if ($formName == "CRM_Contribute_Form_Contribution" && (CRM_Utils_Array::value('contribution_status_id', $fields) == 3)) {
+      unset($errors['financial_batch_id']);
     }
     if ($financialEasyBatchId && !empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields)) {
