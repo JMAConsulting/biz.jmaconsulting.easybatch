@@ -1,4 +1,6 @@
-<span class='help-icon-auto_batch_non_payment_trxns'>{help id="auto_batch_non_payment_trxns" file="CRM/EasyBatch/Form/HelpIcons"}</span>
+<div style="display:none;">
+  <span class='help-icon-auto_batch_non_payment_trxns'>{help id="auto_batch_non_payment_trxns" file="CRM/EasyBatch/Form/HelpIcons"}</span>
+</div>
 {if $batches}
 <table class='non-payment-batches'>
   <tr class="crm-preferences-form-block-non_payment_transactions_batch">
