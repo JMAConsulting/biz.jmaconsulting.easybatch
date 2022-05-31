@@ -241,24 +241,40 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       $title .= ts(' non-payment transactions auto') . " {$suffixName}";
       $batchDate = CRM_Utils_Date::processDate(date("Y-m-01"), date("H:i:s"));
     }
-    $params = array(
+
+    // retrieve the batch ID using batch name to avoid create duplicate batch ID
+    $batchID = civicrm_api3('Batch', 'get', [
+      'name' => substr(str_replace(' ', '_', $title), 0, 64),
+      'sequential' => 1,
+    ])['values'][0]['id'] ?? NULL;
+
+    $params = [
+      'id' => $batchID,
       'title' => $title,
       'status_id' => "Open",
       'created_id' => CRM_Core_Session::singleton()->get('userID'),
       'created_date' => CRM_Utils_Date::processDate(date("Y-m-d"), date("H:i:s")),
       'total' => 0.00,
       'item_count' => 0,
-    );
-
+    ];
     $batch = civicrm_api3('Batch', 'create', $params);
-    $entityBatchParams = array(
+
+    $easyBatchEntityID = civicrm_api3('EasyBatchEntity', 'get', [
+      'batch_id' => $batchID,
+      'payment_processor_id' => $paymentProcessorID,
+      'card_type_id' => $cardTypeID,
+      'sequential' => 1,
+    ])['values'][0]['id'] ?? NULL;
+
+    $entityBatchParams = [
+      'id' => $easyBatchEntityID,
       'batch_id' => $batch['id'],
       'contact_id' => $contactId,
       'is_automatic' => TRUE,
       'batch_date' => $batchDate,
       'payment_processor_id' => $paymentProcessorID,
       'card_type_id' => $cardTypeID,
-    );
+    ];
     self::create($entityBatchParams);
   }
 
