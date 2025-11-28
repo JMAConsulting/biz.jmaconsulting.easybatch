@@ -201,7 +201,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       $isRequired = FALSE;
       if (Civi::settings()->get('require_financial_batch')
         && in_array($formName, array(
-          //"CRM_Contribute_Form_Contribution",
+          "CRM_Contribute_Form_Contribution",
           "CRM_Contribute_Form_AdditionalPayment"
         ))
       ) {
@@ -328,15 +328,16 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
         $fields['payment_processor_id'] = array_keys($fields['payment_processor']);
       }
     }
-    elseif ($formName == 'CRM_Event_Form_ManageEvent_Fee' && !empty($fields['payment_processor'])) {
-      $fields['payment_processor_id'] = explode(',', $fields['payment_processor']);
+    elseif ($formName == 'CRM_Event_Form_ManageEvent_Fee' && !empty($fields['payment_processor'])) { 
+      $fields['payment_processor_id'] = is_array($fields['payment_processor']) ? array_keys($fields['payment_processor']) : explode(',', $fields['payment_processor']);
     }
 
     if (in_array($formName, array(
       'CRM_Contribute_Form_AdditionalPayment',
       'CRM_Event_Form_ParticipantFeeSelection'))
     ) {
-      $fields['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $form->getVar('_contributionId'), 'financial_type_id');
+      $contributionId = ($formName === 'CRM_Event_Form_ParticipantFeeSelection' ? $form->getContributionID() : $form->getVar('_contributionId'));
+      $fields['financial_type_id'] = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_Contribution', $contributionId, 'financial_type_id');
     }
     try {
       CRM_EasyBatch_BAO_EasyBatch::checkFTWithSameOrg($form, $fields);
@@ -359,9 +360,6 @@ function easybatch_civicrm_validateForm($formName, &$fields, &$files, &$form, &$
     }
     if ($financialEasyBatchId && Civi::settings()->get('require_financial_batch') && !CRM_Utils_Array::value('financial_batch_id', $fields)) {
       $errors['financial_batch_id'] = ts("Select an open Financial Batch as required. Create one if necessary before creating contribution.");
-    }
-    if ($formName == "CRM_Contribute_Form_Contribution" && (CRM_Utils_Array::value('contribution_status_id', $fields) == 3)) {
-      unset($errors['financial_batch_id']);
     }
     if ($financialEasyBatchId && !empty($fields['financial_batch_id'])) {
       if (CRM_EasyBatch_BAO_EasyBatch::checkBatchWithSameOrg($fields['financial_batch_id'], $fields)) {
@@ -542,13 +540,7 @@ function easybatch_civicrm_postSave_civicrm_financial_trxn($dao) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_entityTypes
  *
  */
-function easybatch_civicrm_entityTypes(&$entityTypes) {
-  $entityTypes[] = array(
-    'name'  => 'EasyBatchEntity',
-    'class' => 'CRM_EasyBatch_DAO_EasyBatchEntity',
-    'table' => 'civicrm_easybatch_entity',
-  );
-}
+
 
 /**
  * Implements hook_civicrm_pre().
@@ -607,11 +599,13 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       'title' => '',
       'ref' => " rowBatchData-{$objectId}",
       'extra' => " style='Display:none;' company ='{$company}' batchDate = '{$date}'",
+      'weight' => 30,
     );
     $links[] = array(
       'name' => 'Batch Details Report',
       'url' => $url,
       'title' => 'Batch Details Report',
+      'weight' => 31,
     );
     if (!CRM_EasyBatch_BAO_EasyBatch::isOpenAutoBatch($objectId)) {
       return FALSE;

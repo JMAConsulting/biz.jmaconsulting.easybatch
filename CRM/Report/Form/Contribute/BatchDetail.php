@@ -380,6 +380,7 @@ class CRM_Report_Form_Contribute_BatchDetail extends CRM_Report_Form {
         INNER JOIN civicrm_financial_trxn {$this->_aliases['civicrm_financial_trxn']}
           ON {$this->_aliases['civicrm_financial_trxn']}.id = ceb.entity_id
           AND ceb.entity_table = 'civicrm_financial_trxn'
+        INNER JOIN civicrm_entity_financial_trxn {$this->_aliases['civicrm_entity_financial_trxn']} ON {$this->_aliases['civicrm_financial_trxn']}.id = {$this->_aliases['civicrm_entity_financial_trxn']}.financial_trxn_id
         LEFT JOIN civicrm_option_group cog ON cog.name = 'payment_instrument'
         LEFT JOIN civicrm_option_value cov ON (cov.value = {$this->_aliases['civicrm_financial_trxn']}.payment_instrument_id AND cov.option_group_id = cog.id)
         LEFT JOIN civicrm_option_group cog_status ON cog_status.name = 'contribution_status'

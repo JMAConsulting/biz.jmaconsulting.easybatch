@@ -1,11 +1,12 @@
 <?php
 return array(
-  'display_financial_batch' => array(
+  'display_financial_batch' = array(
     'group_name' => 'Contribute Preferences',
     'group' => 'contribute',
     'name' => 'display_financial_batch',
-    'type' => 'Boolean',
+    'type' => 'Integer',
     'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
     'default' => 0,
     'add' => '4.7',
     'title' => 'Display Financial Batch on payments through Backoffice forms?',
@@ -13,14 +14,14 @@ return array(
     'is_contact' => 0,
     'description' => '',
     'help_text' => '',
-    'settings_pages' => ['contribute' => ['weight' => 9]],
   ),
   'require_financial_batch' => array(
     'group_name' => 'Contribute Preferences',
     'group' => 'contribute',
     'name' => 'require_financial_batch',
-    'type' => 'Boolean',
+    'type' => 'Integer',
     'html_type' => 'checkbox',
+    'quick_form_type' => 'Element',
     'default' => 0,
     'add' => '4.7',
     'title' => 'Require Financial Batch on payments through Backoffice forms?',
@@ -28,16 +29,16 @@ return array(
     'is_contact' => 0,
     'description' => '',
     'help_text' => '',
-    'settings_pages' => ['contribute' => ['weight' => 10]],
   ),
   'auto_batch_non_payment_trxns' => array(
     'group_name' => 'Contribute Preferences',
     'group' => 'contribute',
     'name' => 'auto_batch_non_payment_trxns',
     'type' => 'Integer',
-    'html_type' => 'select',
+    'html_type' => 'Select',
+    'quick_form_type' => 'Element',
     'default' => 0,
-    'options' => array(
+    'option_values' => array(
       0 => ts('No'),
       'IIF' => ts('Into .iif file'),
       'CSV' => ts('Into .csv file'),
@@ -48,6 +49,5 @@ return array(
     'is_contact' => 0,
     'description' => '',
     'help_text' => '',
-    'settings_pages' => ['contribute' => ['weight' => 11]],
   ),
 );
