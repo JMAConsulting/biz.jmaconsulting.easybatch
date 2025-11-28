@@ -86,5 +86,15 @@ while ($payment_processor_ids->fetch()) {
     'is_domain' => 1,
     'is_contact' => 0,
   ];
+  $settings["pp_last_job_run_{$paymentProcessorId}"] = [
+    'name' => "pp_last_job_run_{$paymentProcessorId}",
+    'title' => 'Batch Cron job last run time for payment processor',
+    'type' => 'String',
+    'html_type' => 'datepicker',
+    'default' => 0,
+    'add' => '1.0',
+    'is_domain' => 1,
+    'is_contact' => 0,
+  ];
 }
 return $settings;
