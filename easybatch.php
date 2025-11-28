@@ -256,7 +256,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
   if ($formName == "CRM_Admin_Form_PaymentProcessor") {
     $form->add('advcheckbox', 'auto_financial_batch', ts('Create Automatic Daily Financial Batches for Payments?'));
     $form->add('advcheckbox', 'cc_financial_batch', ts('Create separate batches per card type?'));
-    $form->add('datepicker', 'batch_close_time', ts('Automatic Daily Batch Close Time'), FALSE, [], ['Time' => TRUE]);
+    $form->add('datepicker', 'batch_close_time', ts('Automatic Daily Batch Close Time'), FALSE, [], ['time' => TRUE, 'date' => FALSE]);
     $paymentProcessorId = $form->getVar('_id');
     $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($paymentProcessorId);
     $form->assign('batches', $batches);
@@ -267,7 +267,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       $defaults = array(
         'auto_financial_batch' => Civi::settings()->get("pp_auto_financial_batch_{$paymentProcessorId}"),
         'cc_financial_batch' => Civi::settings()->get("pp_cc_financial_batch_{$paymentProcessorId}"),
-        'batch_close_time_time' => Civi::settings()->get("pp_batch_close_time_{$paymentProcessorId}"),
+        'batch_close_time' => Civi::settings()->get("pp_batch_close_time_{$paymentProcessorId}"),
       );
       $form->setDefaults($defaults);
       if (!empty($defaults['auto_financial_batch'])) {
