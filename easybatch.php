@@ -115,7 +115,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       FALSE, array('class' => 'crm-select2', 'placeholder' => ts('- any -'))
     );
 
-    $form->addDate('batch_date', ts('Batch Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('datepicker', 'batch_date', ts('Batch Date'), FALSE, [], ['time' => FALSE]);
     CRM_Core_Region::instance('page-body')->add(array(
       'template' => 'CRM/EasyBatch/Form/ContactRef.tpl',
     ));
@@ -127,7 +127,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       if ($orgId) {
         $defaults['org_id'] = $orgId;
       }
-      list($defaults['batch_date'], $defaults['batch_date_time']) = CRM_Utils_Date::setDateDefaults(date('Ymd'), 'activityDate');
+      $defaults['batch_date'] = date('Y-m-d');
     }
     else {
       $values = CRM_EasyBatch_BAO_EasyBatch::retrieve(array('batch_id' => $batchId));
@@ -135,7 +135,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
         'org_id' => CRM_Utils_Array::value('contact_id', $values),
       );
       if (!empty($values['batch_date'])) {
-        list($defaults['batch_date'], $defaults['batch_date_time']) = CRM_Utils_Date::setDateDefaults($values['batch_date'], 'activityDate');
+        $defaults['batch_date'] = $values['batch_date'];
       }
     }
     $form->setDefaults($defaults);
@@ -150,11 +150,11 @@ function easybatch_civicrm_buildForm($formName, &$form) {
       ),
     ));
     $form->add('text', 'batch_date_from', ts('Batch Date from'));
-    $form->addDate('batch_date_from_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('datepicker', 'batch_date_from_hidden', ts('Date'), FALSE, [], ['time' => FALSE]);
     $form->add('text', 'batch_date_to', ts('Batch Date to'));
-    $form->addDate('batch_date_to_hidden', ts('Date'), FALSE, array('formatType' => 'activityDate'));
+    $form->add('datepicker', 'batch_date_to_hidden', ts('Date'), FALSE, [], ['time' => FALSE]);
     $updatedElements = array();
-    $elements = $form->get_template_vars('elements');
+    $elements = $form->getTemplateVars('elements');
     foreach ($elements as $element) {
       $updatedElements[] = $element;
       if ($element == 'status_id') {
@@ -256,7 +256,7 @@ function easybatch_civicrm_buildForm($formName, &$form) {
   if ($formName == "CRM_Admin_Form_PaymentProcessor") {
     $form->add('checkbox', 'auto_financial_batch', ts('Create Automatic Daily Financial Batches for Payments?'));
     $form->add('checkbox', 'cc_financial_batch', ts('Create separate batches per card type?'));
-    $form->addDate('batch_close_time', ts('Automatic Daily Batch Close Time'), FALSE, array('formatType' => 'activityDateTime'));
+    $form->add('datepicker', 'batch_close_time', ts('Automatic Daily Batch Close Time'), FALSE, [], ['Time' => TRUE]);
     $paymentProcessorId = $form->getVar('_id');
     $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($paymentProcessorId);
     $form->assign('batches', $batches);
@@ -493,7 +493,7 @@ function easybatch_civicrm_postProcess($formName, &$form) {
  */
 function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
   if ($objectName == 'Batch' && in_array($op, array('edit'))) {
-    $action = CRM_Core_Smarty::singleton()->get_template_vars('batchAction');
+    $action = CRM_Core_Smarty::singleton()->getTemplateVars('batchAction');
     if ($action) {
       $msg = '';
       if ($op == 'edit') {
@@ -522,9 +522,9 @@ function easybatch_civicrm_post($op, $objectName, $objectId, &$objectRef) {
  *
  */
 function easybatch_civicrm_postSave_civicrm_financial_trxn($dao) {
-  $backendFormSubmit = CRM_Core_Smarty::singleton()->get_template_vars('backendFormSubmit');
+  $backendFormSubmit = CRM_Core_Smarty::singleton()->getTemplateVars('backendFormSubmit');
   if ($backendFormSubmit && $dao->is_payment) {
-    $financialEasyBatchId = CRM_Core_Smarty::singleton()->get_template_vars('financialEasyBatchId');
+    $financialEasyBatchId = CRM_Core_Smarty::singleton()->getTtemplateVars('financialEasyBatchId');
     if ($financialEasyBatchId) {
       CRM_EasyBatch_BAO_EasyBatch::addTransactionsToBatch($financialEasyBatchId, $dao->id);
     }
@@ -587,7 +587,7 @@ function easybatch_civicrm_links($op, $objectName, &$objectId, &$links, &$mask =
       TRUE,
       $instanceID
     );
-    $easyBatches = CRM_Core_Smarty::singleton()->get_template_vars('easyBatch');
+    $easyBatches = CRM_Core_Smarty::singleton()->getTemplateVars('easyBatch');
     $company = CRM_Utils_Array::value('org_id', CRM_Utils_Array::value($objectId, $easyBatches));
     $date = CRM_Utils_Array::value('batch_date', CRM_Utils_Array::value($objectId, $easyBatches));
     $dateFormat = Civi::settings()->get('dateformatFinancialBatch');

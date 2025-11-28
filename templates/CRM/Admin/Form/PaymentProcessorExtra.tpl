@@ -10,7 +10,7 @@
   </tr>
   <tr class='crm-paymentProcessor-form-block-batch_close_time'>
      <td class='label'>{$form.batch_close_time.label}</td>
-     <td class='content'>{$form.batch_close_time.html}{include file="CRM/common/jcalendar.tpl" elementName=batch_close_time}</td>
+     <td class='content'>{$form.batch_close_time.html}</td>
   </tr>
   {if $batches and !$isHideBatch}
   <tr class="crm-paymentProcessor-form-block-non_payment_transactions_batch">
@@ -38,10 +38,6 @@ CRM.$(function($) {
   $($('tr.crm-paymentProcessor-form-block-auto_financial_batch'))
     .insertAfter('tr.crm-paymentProcessor-form-block-financial_account');
   
-  $("#batch_close_time").replaceWith($("#batchclosetime"));
-  $("input[name^='batch_close_time_display_']").hide();
-  $('label[for="batch_close_time_time"]').hide();
-
   showHideElement();
   $("#auto_financial_batch").click(function() {
     showHideElement();
