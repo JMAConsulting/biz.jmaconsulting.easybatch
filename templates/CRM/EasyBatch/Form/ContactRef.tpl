@@ -5,7 +5,7 @@
   </tr>
   <tr class='crm-financialbatch-form-block-batch_date'>
      <td class='label'>{$form.batch_date.label}</td>
-     <td class='content'>{include file="CRM/common/jcalendar.tpl" elementName=batch_date}</td>
+     <td class='content'>{$form.batch_date.html}</td>
   </tr>
   <tr class='crm-financialbatch-form-block-org_id'>
      <td class='label'>{$form.org_id.label}</td>
