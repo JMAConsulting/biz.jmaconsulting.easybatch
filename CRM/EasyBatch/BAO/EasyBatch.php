@@ -72,7 +72,8 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
   public static function getEasyBatches(
     $paymentProcessorID = NULL,
     $returnColumn = 'title',
-    $isAuto = TRUE
+    $isAuto = TRUE,
+    $cardTypeID = NULL
   ) {
     $status = CRM_Core_PseudoConstant::getKey('CRM_Batch_BAO_Batch', 'status_id', 'Open');
     $easyBatches = array();
@@ -83,6 +84,9 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
     }
     else {
       $where[] = "e.payment_processor_id IS NULL";
+    }
+    if ($cardTypeID) {
+      $where[] = "e.card_type_id = {$cardTypeID}";
     }
     $sql = "SELECT b.id, {$returnColumn}
       FROM civicrm_batch b
@@ -145,6 +149,7 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
       return FALSE;
     }
     else {
+      $tx->commit();
       return TRUE;
     }
   }
@@ -166,7 +171,12 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
         && Civi::settings()->get("pp_auto_financial_batch_{$financialTrxn->payment_processor_id}")
       ) {
         $findCardType = (bool) Civi::settings()->get("pp_cc_financial_batch_{$financialTrxn->payment_processor_id}");
-        $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id);
+        if ($findCardType) {
+          $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id, 'title', TRUE, $financialTrxn->card_type_id);
+        }
+        else {
+          $batches = CRM_EasyBatch_BAO_EasyBatch::getEasyBatches($financialTrxn->payment_processor_id);
+        }
         $financialEasyBatchId = key($batches);
       }
     }
@@ -222,10 +232,10 @@ class CRM_EasyBatch_BAO_EasyBatch extends CRM_EasyBatch_DAO_EasyBatchEntity {
 
     //check if batch is still open
     if ($paymentProcessorID) {
-      $batches = self::getEasyBatches($paymentProcessorID);
+      $batches = self::getEasyBatches($paymentProcessorID, 'title', TRUE, $cardTypeID);
     }
     else {
-      $batches = self::getEasyBatches(NULL, 'contact_id');
+      $batches = self::getEasyBatches(NULL, 'contact_id', TRUE, $cardTypeID);
       $batches = array_search($contactId, $batches);
     }
 
