@@ -67,5 +67,14 @@ return [
       'input_type' => 'Select Date',
       'description' => E::ts('Date for the transactions to be included in the batch.'),
     ],
+    'card_type_id' => [
+      'title' => E::ts('Card Type'),
+      'sql_type' => 'int unsigned',
+      'input_type' => 'Select',
+      'unique_name' => 'easy_batch_entity_card_type_id',
+      'pseudoconstant' => [
+        'option_group_name' => 'accept_creditcard',
+      ],
+    ],
   ],
 ];
